@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatBoltSeguros - Configuración RAG</title>
+  <style>
+    /* Estilos generales */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Container para login y rag */
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+    textarea[disabled] {
+      background-color: #eee;
+    }
+
+    button {
+      padding: 12px 20px;
+      background-color: #007bff;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    /* Ocultamos inicialmente el contenedor de RAG */
+    #rag-container {
+      display: none; 
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Contenedor de login -->
+  <div class="container" id="login-container">
+    <h2>Iniciar Sesión</h2>
+    <label for="username">Usuario:</label>
+    <input type="text" id="username" placeholder="Introduce tu usuario" />
+    <label for="password">Contraseña:</label>
+    <input type="password" id="password" placeholder="Introduce tu contraseña" />
+    <button id="login-button">Iniciar Sesión</button>
+  </div>
+
+  <!-- Contenedor de Configuración del RAG, oculto al inicio -->
+  <div class="container" id="rag-container">
+    <h2>Configuración del RAG del Corredor</h2>
+
+    <!-- Ingresar el ID del corredor -->
+    <label for="corredor-id">ID del Corredor:</label>
+    <input type="number" id="corredor-id" placeholder="Introduce el ID del corredor" />
+
+    <!-- Botón para buscar la configuración actual -->
+    <div class="btn-group">
+      <button id="search-rag-button">Buscar Configuración</button>
+    </div>
+
+    <!-- Mostrar la configuración actual -->
+    <label for="current-rag">Configuración Actual:</label>
+    <textarea id="current-rag" rows="5" placeholder="Aquí se mostrará la configuración actual" disabled></textarea>
+
+    <!-- Área para ingresar la nueva configuración -->
+    <label for="new-rag">Nueva Configuración:</label>
+    <textarea id="new-rag" rows="10" placeholder="Introduce las nuevas reglas de comportamiento..."></textarea>
+
+    <!-- Botón para guardar la nueva configuración -->
+    <div class="btn-group">
+      <button id="update-rag-button">Guardar Nueva Configuración</button>
+    </div>
+  </div>
+
+  <!-- Axios CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    // --------------------------------------------------
+    // Lógica para el LOGIN
+    // --------------------------------------------------
+    const loginButton = document.getElementById('login-button');
+    loginButton.addEventListener('click', () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !password) {
+        alert('Por favor, ingresa usuario y contraseña.');
+        return;
+      }
+
+      // Llamada a /api/login
+      axios.post('http://149.50.133.40:8080/api/login', {
+        username,
+        password
+      })
+      .then(response => {
+        if (response.data.success) {
+          alert('¡Login exitoso!');
+          // Ocultar contenedor de login
+          document.getElementById('login-container').style.display = 'none';
+          // Mostrar contenedor de RAG
+          document.getElementById('rag-container').style.display = 'block';
+        } else {
+          alert(response.data.message || 'Usuario o contraseña incorrectos.');
+        }
+      })
+      .catch(error => {
+        console.error('Error al iniciar sesión:', error);
+        alert('Ocurrió un error al iniciar sesión.');
+      });
+    });
+
+    // --------------------------------------------------
+    // Lógica para el RAG
+    // --------------------------------------------------
+    document.getElementById('search-rag-button').addEventListener('click', function () {
+      const corredorId = document.getElementById('corredor-id').value;
+      if (!corredorId) {
+        alert('Por favor, ingresa el ID del corredor.');
+        return;
+      }
+      axios.get(`http://149.50.133.40:8080/api/get-rag?corredorId=${corredorId}`)
+      .then(response => {
+        if(response.data.rag) {
+          document.getElementById('current-rag').value = response.data.rag;
+          alert('Configuración encontrada. Puedes modificarla y luego guardarla.');
+        } else {
+          document.getElementById('current-rag').value = '';
+          alert(response.data.message || 'No se encontró configuración para este corredor.');
+        }
+      })
+      .catch(error => {
+        console.error('Error al obtener el RAG:', error);
+        alert('Hubo un problema al obtener el RAG.');
+      });
+    });
+
+    document.getElementById('update-rag-button').addEventListener('click', function () {
+      const corredorId = document.getElementById('corredor-id').value;
+      const newRag = document.getElementById('new-rag').value;
+      if (!corredorId || !newRag) {
+        alert('Por favor, ingresa el ID del corredor y la nueva configuración.');
+        return;
+      }
+      axios.post('http://149.50.133.40:8080/api/update-rag', {
+        corredorId: corredorId,
+        rag: newRag
+      })
+      .then(response => {
+        alert('Nueva configuración guardada correctamente');
+        // Actualizamos el área de configuración actual
+        document.getElementById('current-rag').value = newRag;
+        document.getElementById('new-rag').value = '';
+      })
+      .catch(error => {
+        console.error('Error al guardar el RAG:', error);
+        alert('Hubo un problema al guardar la nueva configuración.');
+      });
+    });
+  </script>
+</body>
+</html>

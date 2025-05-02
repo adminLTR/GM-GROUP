@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>ChatBot GM Group</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h2>ChatBot GM Group</h2>
+      <!-- Nota: Cada front-end envía el identificador del corredor en la solicitud -->
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <!-- Aquí aparecerán los mensajes -->
+    </div>
+    <div class="chat-input">
+      <input type="text" id="user-input" placeholder="Escribe tu mensaje...">
+      <!-- Campo para adjuntar archivos: se aceptan JPG, PNG y PDF -->
+      <input type="file" id="file-input" accept="image/jpeg, image/png, application/pdf">
+      <button id="send-btn">Enviar</button>
+    </div>
+  </div>
+  <script src="./script.js"></script>
+</body>
+</html>
+
+
