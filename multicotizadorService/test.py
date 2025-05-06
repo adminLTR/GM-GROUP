@@ -1,156 +1,50 @@
-import requests
-
-
-# xml_body = """<?xml version="1.0" encoding="UTF-8"?>
-# <Request>
-#   <Entity>Auto</Entity>
-#   <Params>
-#      <Param Name="cod_usuario" Value="WEB5842" />
-#      <Param Name="cod_subramo" Value="1" />
-#      <Param Name="cod_marca" Value="77" />
-#      <Param Name="cod_modelo" Value="2035" />
-#      <Param Name="aaaa_fabrica" Value="2018" />
-#      <Param Name="cod_area" Value="1" />
-#      <Param Name="edad_conductor" Value="40" />
-#      <Param Name="cod_uso" Value="1" />
-#      <Param Name="cod_manejo" Value="2" />
-#      <Param Name="ncd" Value="6" />
-#      <Param Name="cod_moneda" Value="0" />
-#      <Param Name="accidentes" Value="1" />
-#      <Param Name="cant_desc_cliente" Value="0" />
-#      <Param Name="top_driver" Value="0" />
-#      <Param Name="str_fecha" Value="02/12/2024" />
-#      <Param Name="cod_agente" Value="5842" />
-#      <Param Name="cod_agencia" Value="10" />
-#      <Param Name="pje_descuento" Value="0" />
-#      <Param Name="pje_recargo" Value="0" />
-#      <Param Name="cant_deducible" Value="1" />
-#   </Params>
-# </Request>"""
-
-# import base64
-
-# username = "WEB"
-# password = "Sura2025.2025W"
-# auth_string = f"{username}:{password}"
-# auth_bytes = base64.b64encode(auth_string.encode()).decode()
-
-# headers = {
-#     "Authorization": f"Basic {auth_bytes}",
-#     "Content-Type": "application/xml"
-# }
-
-# try:
-#     response = requests.post(f"https://test.segurossura.com.uy/CotizadoresBlock/FachadaCotizador.asmx", headers=headers, data=xml_body)
-#     response.raise_for_status()
-#     print(response.text, 200, {'Content-Type': 'application/xml'})
-
-# except requests.exceptions.RequestException as e:
-#     print(({"error": str(e)}), 500)
-
-import requests
+from google.cloud import vision
 import pprint
+import io
+import os
+import re
 
-def login_sc(api_url: str, username: str, password: str) -> str:
-    """
-    Realiza login en la API y retorna el token.
-    """
-    payload = {
-        'UserName': username,
-        'Password': password
+# Autenticación
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "vision-service.json"
+
+def extraer_texto_de_imagen(ruta_imagen):
+    client = vision.ImageAnnotatorClient()
+
+    with io.open(ruta_imagen, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.Image(content=content)
+    response = client.text_detection(image=image)
+    texts = response.text_annotations
+
+    if not texts:
+        print("No se encontró texto.")
+        return
+
+    # Unimos todo el texto detectado en un solo string
+    texto_completo = texts[0].description.replace('\n', ' ').upper()
+
+    # Diccionario de resultados
+    datos = {
+        "matricula": re.search(r'MATRICULA\s+([A-Z]{3}\s?\d{4})', texto_completo),
+        "marca": re.search(r'MARCA\s*:?[\s]*([A-Z]+)', texto_completo),
+        "modelo": re.search(r'MODELO.*?(SUZUKI.*?)\sTIPO', texto_completo),
+        "tipo": re.search(r'TIPO\s*:?[\s]*([A-Z0-9\s]+?)\s+ATRIBUTO', texto_completo),
+        "año": re.search(r'ATRIBUTO\s*:?[\s]*(\d{4})', texto_completo),
+        "combustible": re.search(r'COMB\s*\.?\s*:?[\s]*([A-Z]+)', texto_completo),
+        "cilindrada": re.search(r'CILINDRADA\s*:?[\s]*(\d+)', texto_completo),
+        "nro_motor": re.search(r'MOTOR\s*:?[\s]*([A-Z0-9]+)', texto_completo),
+        "nro_chasis": re.search(r'CHASIS\s*:?[\s]*([A-Z0-9]+)', texto_completo),
+        "titular": re.search(r'TITULAR.*?:\s*([\w\s,]+?)\s+EJES', texto_completo),
+        "pasajeros": re.search(r'PASAJEROS\s*:?[\s]*(\d+)', texto_completo),
+        "ci_rut": re.search(r'C\.I\.\/R\.U\.T\s*\.?:\s*([\d\-]+)', texto_completo)
     }
 
-    try:
-        response = requests.post(api_url + '/api/Auth/LoginAsync', json=payload)
-        data = response.json()
-        response.raise_for_status()
-        return data.get('Auth_Token')
+    # Convertimos los matches en texto plano
+    datos_limpios = {k: (v.group(1).strip() if v else None) for k, v in datos.items()}
 
-    except requests.exceptions.RequestException as e:
-        print(f"Error en el login: {e}")
-        return None
+    return datos_limpios
 
-
-# Configuración
-BASE_URL = 'https://api-uat.sancristobalonline.com.ar/b2b-uruguay-gateway'
-USERNAME = 'B2B_Actibox_UY'
-PASSWORD = '7Y8F0WsLrY9tK86j'
-
-# Paso 1: Login
-token = login_sc(BASE_URL, USERNAME, PASSWORD)
-
-if token:
-    # Paso 2: Configurar headers con el token
-    headers = {
-        'Authorization': f'Bearer {token}',
-        'Accept': 'application/json'
-    }
-
-    try:
-        # Paso 3: Hacer la solicitud GET
-        response = requests.get(BASE_URL + '/api/catalogo/tipos-de-personas', headers=headers)
-        response.raise_for_status()
-        datos = response.json()
-        print('Datos obtenidos correctamente:')
-        pprint.pprint(datos)
-
-    except requests.exceptions.RequestException as e:
-        print(f'Ocurrió un error en la solicitud: {e}')
-
-
-    try:
-        # Paso 3: Hacer la solicitud GET
-        response = requests.get(BASE_URL + '/api/catalogo/monedas', headers=headers)
-        response.raise_for_status()
-        datos = response.json()
-        print('Datos obtenidos correctamente:')
-        pprint.pprint(datos)
-
-    except requests.exceptions.RequestException as e:
-        print(f'Ocurrió un error en la solicitud: {e}')
-    
-    try:
-        # Paso 3: Hacer la solicitud GET
-        response = requests.get(BASE_URL + '/api/catalogo/usos', headers=headers)
-        response.raise_for_status()
-        datos = response.json()
-        print('Datos obtenidos correctamente:')
-        pprint.pprint(datos)
-
-    except requests.exceptions.RequestException as e:
-        print(f'Ocurrió un error en la solicitud: {e}')
-    
-    try:
-        # Paso 3: Hacer la solicitud GET
-        response = requests.get(BASE_URL + '/api/catalogo/alternativas-comerciales', headers=headers)
-        response.raise_for_status()
-        datos = response.json()
-        print('Datos obtenidos correctamente:')
-        pprint.pprint(datos)
-
-    except requests.exceptions.RequestException as e:
-        print(f'Ocurrió un error en la solicitud: {e}')
-    
-    try:
-        # Paso 3: Hacer la solicitud GET
-        response = requests.get(BASE_URL + '/api/catalogo/vehiculos-cortesia', headers=headers)
-        response.raise_for_status()
-        datos = response.json()
-        print('Datos obtenidos correctamente:')
-        pprint.pprint(datos)
-
-    except requests.exceptions.RequestException as e:
-        print(f'Ocurrió un error en la solicitud: {e}')
-    
-    try:
-        # Paso 3: Hacer la solicitud GET
-        response = requests.get(BASE_URL + '/api/catalogo/vehiculos-sc', headers=headers)
-        response.raise_for_status()
-        datos = response.json()
-        print('Datos obtenidos correctamente:')
-        pprint.pprint(datos)
-
-    except requests.exceptions.RequestException as e:
-        print(f'Ocurrió un error en la solicitud: {e}')
-else:
-    print("No se pudo obtener el token, login fallido.")
+# Ejecuta
+datos_extraidos = extraer_texto_de_imagen("document_propiedad2.jpeg")
+pprint.pprint(datos_extraidos)

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "woven-perigee-375002",
+  "private_key_id": "1fee100dd75e78dd596902d00cc53b5c56ac4df7",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC8HiiWsqF4rVzD\nqcLFhx+qgwkMK1q84J2A2q0EAnyNJSJDuL1oQomMmplS74RPgE+jZkHNYvKr1ouT\nP7yXzmXlBtM4GACzGVTRuxwPuA0XyRJ6XymdRCoWQzjJJ3PTCY3h7TUkSIQBrvHq\nXmbUfsWNR8sQw+lxI7yNN1NQifkYIbEbVyCs9hpKXTPQzH5GIB/a9Hpj66IBhBnT\nxNAUMxTIILu3e+/q0Hjg4NW0ySOu5wHh7/55+MvpC12ihcmjRbB2AVb1VhRIBPK3\nfZqFlTDughRa1/XfaU7HXfZlaWViR3CXltNGUUaQPggBtk1j+TkvHH1wQHfl30oG\ngEKi7UKhAgMBAAECggEAQAgV8cGo475C0pkAoqKtXSlQFZPWRW9BPWBxvuknwxVu\nNdX2prvrPPBMmyXLCBKZSPmgEUyKZIJZLQxnYdbP6SarE69b4ZqQO/lwAku4LS30\ne7HTpOPUXZKRDCtBKgbZBBttWMXUJQyK7KcoYlEqZj4XOUQuPCQZZIn98m6cWqFa\nOmGfiN6lKpAb65ZTsEJy/UllOSmEx8uEBbAjb27DEvsqZzLdPp7iLhKuE5YlJIcl\nWVE6yW3ydkzaLNgNy5fp0mOrj8qM2SGO1Vcb6KzgDs4W3jLEtSRJlqHNEt5MwUM/\n062WHd3z4rj2GtY3w7JXbbDQLoqFVrRZmYbU4X3u7wKBgQD+FvsG7vHP4gdJZcks\nEn4d4LrMSNC83iLopCaVz8Md+det5lGw0U/OKysWxUWVO+hMpuXORVuAOjzqFLXZ\ns82pxJsz6OFL8kjWU5RqqjKZMG5HRG22jZydm7wH8Mijrj2qYD5oEcgZNsV77KlK\nULH9eTzGW7X6eVuGs5wexQ9y3wKBgQC9iDVzUt0YFr0Fi4EbHy/UnbIqhZftI5sU\nN+VpXSYJLogQZpQ3VhgeDKi/YsahfF+MmyxLLY3VQPpXaxs3y9Purokq967z3evO\nLsoRJ8/QAc6JNa4CG5fKfjnvFy4/g3XcDkeXdQHK1nxsHM4MSSaj3DNpKnamPcVc\noHguWht6fwKBgQD2Tf6O7QeZFaksnC+TumVovxU0vA0kWE0MqTsCFEE3CJ7rYw2j\nUnODDlOZoidej5ES5OJ1vsQBG/M6klLpsyNVQ1GT01a6USYMJT8E2vFrkAgGq62S\nvdmo6nMuW1mTWW9LfjpglYQb9P0gsPw2Ht07MdAZFIPmRsfTXr6jETF1jwKBgG3y\nkB9AWKXauvh2fwS+yL5sZKiqKwIT/6hw7JJ8yM3WwnPRLfYT6ZW0/kdYA6Y2Qi+M\n7NsHqBmnwhHoPjfV9DGn6kaUvFcXy+0l0260S6d9BNUv4Ku0Wg/LvcvnBJsvpbVs\nSzefVtTWLAODijwyS0oPOXuueHnjp5QeOtmYyAv9AoGAdvndJU8qIW7KZA5vLRwF\niqPim4FQRcvfq61R4TaAfpjZ7sWEo8sA1/MClELZ9Cbnc1MwfJLtO3f4AnQAQ12E\nl1NJbqWpHiNBm3CKkqrcYyaAa1tLBQEqpJGrziaLVQ/nbx6Nz0LyOeHIIZ95l2Yy\nyYelh+76mhqwr8kK5i92jaI=\n-----END PRIVATE KEY-----\n",
+  "client_email": "chatbot@woven-perigee-375002.iam.gserviceaccount.com",
+  "client_id": "116168312446865477892",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/chatbot%40woven-perigee-375002.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
