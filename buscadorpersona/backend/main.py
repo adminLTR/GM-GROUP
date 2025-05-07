@@ -11,7 +11,7 @@ app = FastAPI()
 # Permitir peticiones desde React (localhost:3000)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -31,8 +31,6 @@ class BusquedaRequest(BaseModel):
 
 @app.post("/buscar")
 async def realizar_busqueda(data: BusquedaRequest):
-    # Acá llamás a tu lógica real
-    print("📥 Recibido:", data.dict())
     # Simulamos resultado:
     resultado = {
         "coincidencias_internas": [

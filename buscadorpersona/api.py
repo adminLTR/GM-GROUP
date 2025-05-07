@@ -73,7 +73,7 @@ async def buscar(request: Request):
     # Obtener ID de búsqueda recién guardada
     conn = obtener_conexion_busqueda()
     cursor = conn.cursor()
-    cursor.execute("SELECT MAX(id_busqueda) FROM busquedas")
+    cursor.execute("SELECT MAX(id) FROM busquedas")
     id_busqueda = cursor.fetchone()[0]
     cursor.close()
     conn.close()

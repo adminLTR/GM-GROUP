@@ -62,6 +62,7 @@ const BuscadorPersonas = () => {
       }
       
       const datos = await respuesta.json();
+      console.log(datos)
       setResultados(datos.resultados || {});
       setResultadosGoogle(datos.google || []);
       setBusquedaRealizada(true);
@@ -210,14 +211,14 @@ const BuscadorPersonas = () => {
             <label className="block text-gray-700 mb-2 font-medium">Tipo de Persona</label>
             <div className="grid grid-cols-2 gap-4">
               <button 
-                className={`flex items-center justify-center p-4 rounded-lg border ${tipoPersona === 'Física' ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
+                className={`flex items-center justify-center p-4 cursor-pointer rounded-lg border ${tipoPersona === 'Física' ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
                 onClick={() => setTipoPersona('Física')}
               >
                 <User className="mr-2" />
                 <span>Física</span>
               </button>
               <button 
-                className={`flex items-center justify-center p-4 rounded-lg border ${tipoPersona === 'Jurídica' ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
+                className={`flex items-center justify-center cursor-pointer p-4 rounded-lg border ${tipoPersona === 'Jurídica' ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
                 onClick={() => setTipoPersona('Jurídica')}
               >
                 <Building className="mr-2" />
