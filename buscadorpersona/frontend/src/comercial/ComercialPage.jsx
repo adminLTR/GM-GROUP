@@ -20,15 +20,17 @@ const ComercialPage = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEmpresa, setSelectedEmpresa] = useState(null);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   // Fetch initial data from API
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         // Get departamentos from API
-        const resDepartamentos = await fetch('/api/departamentos');
+        const resDepartamentos = await fetch(API_URL + '/departamentos');
         if (resDepartamentos.ok) {
           const departamentosData = await resDepartamentos.json();
-          setDepartamentos(departamentosData);
+          setDepartamentos(departamentosData.departamentos);
         } else {
           console.error('Error fetching departamentos');
         }
@@ -410,7 +412,9 @@ const ComercialPage = () => {
                   >
                     <option value="">Seleccione un departamento</option>
                     {departamentos.map(dep => (
-                      <option key={dep} value={dep}>{dep}</option>
+                      <option key={dep.id_departamento} value={dep.nombre_departamento}>
+                        {dep.nombre_departamento}
+                      </option>
                     ))}
                   </select>
                   <ChevronDown className="absolute right-2 top-2.5 text-gray-500 pointer-events-none" size={20} />

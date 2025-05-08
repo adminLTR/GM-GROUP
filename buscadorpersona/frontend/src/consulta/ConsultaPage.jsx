@@ -23,7 +23,7 @@ const BuscadorPersonas = () => {
   const [error, setError] = useState(null);
 
   // API URL - configúrala según tu entorno
-  const API_URL = 'http://localhost:8000'; // Cambia esto según donde se ejecute tu API
+  const API_URL = import.meta.env.VITE_API_URL; // Cambia esto según donde se ejecute tu API
 
   // Validar documento según tipo y país
   useEffect(() => {

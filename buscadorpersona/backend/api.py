@@ -104,3 +104,13 @@ async def buscar(request: Request):
         "resultados": resultados,
         "google": resultados_google[:10]
     }
+
+@app.get("/departamentos")
+async def get_departamentos():
+    conn = obtener_conexion(os.getenv("DB_SISTEMA_NAME"))
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT id_departamento, nombre_departamento FROM departamentos")
+    departamentos = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return {"departamentos": departamentos}
