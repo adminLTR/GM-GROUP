@@ -1,28 +1,33 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import subprocess
+import os
 
-# Importá tus routers
-from api import enviar_emails_kanban  # Asegurate que esta ruta exista correctamente
+# Ruta a los proyectos
+BACKEND_PATH = os.path.abspath("./backend")
+FRONTEND_PATH = os.path.abspath("./frontend")
 
-app = FastAPI(
-    title="Buscador de Empresas y Kanban",
-    description="API para filtrar empresas, enviar emails y organizar en tablero kanban",
-    version="1.0.0"
+# Comandos
+backend_command = ["uvicorn", "api:app", "--reload", "--port", "8000"]
+frontend_command = ["npm", "run", "dev"]
+
+# Iniciar backend
+backend_process = subprocess.Popen(
+    backend_command,
+    cwd=BACKEND_PATH
 )
 
-# Middleware para permitir llamadas desde el frontend (React)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # podés especificar frontend: ["http://localhost:3000"]
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+# Iniciar frontend
+frontend_process = subprocess.Popen(
+    frontend_command,
+    cwd=FRONTEND_PATH,
+    shell=True
 )
 
-# Incluir tus rutas
-app.include_router(enviar_emails_kanban.router)
+print("✅ Servidores ejecutándose. Presioná Ctrl+C para detenerlos.")
 
-# Si querés una ruta de prueba para chequear si el servidor está activo:
-@app.get("/")
-def root():
-    return {"message": "API activa y funcionando 🚀"}
+try:
+    backend_process.wait()
+    frontend_process.wait()
+except KeyboardInterrupt:
+    print("\n🛑 Deteniendo servidores...")
+    backend_process.terminate()
+    frontend_process.terminate()
