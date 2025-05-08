@@ -1,7 +1,7 @@
-from db.conexion_localizador import obtener_conexion_busqueda
+from db.conexion_mysql import obtener_conexion
 
 def guardar_resultados_google(id_busqueda, consulta, resultados, tipo_busqueda):
-    conn = obtener_conexion_busqueda()
+    conn = obtener_conexion("busquedadatos")
     cursor = conn.cursor()
 
     for r in resultados:

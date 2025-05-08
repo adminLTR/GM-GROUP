@@ -1,10 +1,12 @@
 import mysql.connector
 
-def obtener_conexion():
+import os
+
+def obtener_conexion(db:str):
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
         # password="Ma260512!!",
-        password="",
-        database="sistema_seguros"
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=db or os.getenv("DB_BUSQUEDA_NAME")
     )

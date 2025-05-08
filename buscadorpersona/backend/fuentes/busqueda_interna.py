@@ -1,8 +1,9 @@
+import os
 from db.conexion_mysql import obtener_conexion
-from fuentes.contacto_interno_mysql import buscar_contacto_interno
+from fuentes.buscar_coincidencias import buscar_contacto_interno
 
 def buscar_en_base_personas(nombre_completo, telefono=None, direccion=None):
-    conn = obtener_conexion()
+    conn = obtener_conexion(os.getenv("DB_SISTEMA_NAME"))
     cursor = conn.cursor(dictionary=True)
 
     apellido_uno, apellido_dos = "", ""

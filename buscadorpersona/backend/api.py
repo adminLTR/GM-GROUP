@@ -1,13 +1,17 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fuentes.buscar_coincidencias_fuentes import buscar_coincidencias_fuentes
+from fuentes.buscar_coincidencias import buscar_coincidencias
 from resultados.guardar_resultados import guardar_resultado_busqueda
 from fuentes.validaciones import validar_cedula_uruguaya, validar_rut_uruguayo
 from fuentes.busqueda_google import buscar_en_google
 from resultados.guardar_google import guardar_resultados_google
-from db.conexion_localizador import obtener_conexion_busqueda
+from db.conexion_mysql import obtener_conexion
 from datetime import datetime
+from dotenv import load_dotenv
+import os
 
+# Cargar las variables del archivo .env
+load_dotenv()
 app = FastAPI()
 
 # Habilitar CORS para el frontend local
@@ -54,7 +58,7 @@ async def buscar(request: Request):
                 cedula = ""
 
     # Buscar coincidencias
-    resultados = buscar_coincidencias_fuentes(nombre, telefono or None, direccion or None, departamento or None, cedula or None)
+    resultados = buscar_coincidencias(nombre, telefono or None, direccion or None, departamento or None, cedula or None)
 
     # Guardar búsqueda
     guardar_resultado_busqueda(
@@ -71,7 +75,7 @@ async def buscar(request: Request):
     )
 
     # Obtener ID de búsqueda recién guardada
-    conn = obtener_conexion_busqueda()
+    conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
     cursor = conn.cursor()
     cursor.execute("SELECT MAX(id) FROM busquedas")
     id_busqueda = cursor.fetchone()[0]

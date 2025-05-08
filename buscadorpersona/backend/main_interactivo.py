@@ -1,10 +1,10 @@
-from fuentes.buscar_coincidencias_fuentes import buscar_coincidencias_fuentes
+from buscadorpersona.backend.fuentes.buscar_coincidencias import buscar_coincidencias_fuentes
 from resultados.guardar_resultados import guardar_resultado_busqueda
 from datetime import datetime
 from fuentes.validaciones import validar_cedula_uruguaya, validar_rut_uruguayo
 from fuentes.busqueda_google import buscar_en_google
 from resultados.guardar_google import guardar_resultados_google
-from db.conexion_localizador import obtener_conexion_busqueda
+from db.conexion_mysql import obtener_conexion
 
 
 def main():
@@ -87,7 +87,7 @@ def main():
     )
 
     # Obtener ID de búsqueda recién guardada
-    conn = obtener_conexion_busqueda()
+    conn = obtener_conexion("busquedadatos")
     cursor = conn.cursor()
     cursor.execute("SELECT MAX(id_busqueda) FROM busquedas")
     id_busqueda = cursor.fetchone()[0]

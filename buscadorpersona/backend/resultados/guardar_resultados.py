@@ -1,6 +1,7 @@
-from db.conexion_localizador import obtener_conexion_busqueda
+from db.conexion_mysql import obtener_conexion
 from fuentes.validaciones import validar_cedula_uruguaya, validar_rut_uruguayo
-from fuentes.contacto_interno_mysql import buscar_contacto_interno
+from fuentes.buscar_coincidencias import buscar_contacto_interno
+from utils.utils import calcular_confianza
 
 def guardar_resultado_busqueda(
     nombre_ingresado,
@@ -14,7 +15,7 @@ def guardar_resultado_busqueda(
     tipo_persona,
     coincidencias
 ):
-    conn = obtener_conexion_busqueda()
+    conn = obtener_conexion("busquedadatos")
     cursor = conn.cursor()
 
     # 1. Insertar la búsqueda principal
@@ -156,15 +157,3 @@ def guardar_resultado_busqueda(
     conn.close()
     print(f"✅ Búsqueda guardada con ID: {id_busqueda}")
 
-
-def calcular_confianza(tipo):
-    if tipo == "coincidencia_telefono":
-        return "ALTA"
-    elif tipo == "coincidencia_apellidos_exacta":
-        return "ALTA"
-    elif tipo == "coincidencia_direccion":
-        return "MEDIA"
-    elif tipo == "coincidencia_apellido_individual":
-        return "BAJA"
-    else:
-        return "BAJA"
