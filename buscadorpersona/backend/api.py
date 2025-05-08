@@ -114,3 +114,13 @@ async def get_departamentos():
     cursor.close()
     conn.close()
     return {"departamentos": departamentos}
+
+@app.get("/actividades")
+async def get_departamentos():
+    conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT id, nombre FROM actividad_economica")
+    actividades = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return {"actividades": actividades}

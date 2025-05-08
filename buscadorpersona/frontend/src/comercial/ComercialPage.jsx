@@ -36,10 +36,10 @@ const ComercialPage = () => {
         }
         
         // Get actividades from API
-        const resActividades = await fetch('/api/actividades');
+        const resActividades = await fetch(API_URL + '/actividades');
         if (resActividades.ok) {
           const actividadesData = await resActividades.json();
-          setActividades(actividadesData);
+          setActividades(actividadesData.actividades);
         } else {
           console.error('Error fetching actividades');
         }
@@ -408,7 +408,7 @@ const ComercialPage = () => {
                   <select 
                     className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
                     value={filtros.departamento}
-                    onChange={(e) => setFiltros({...filtros, departamento: e.target.value})}
+                    onChange={(e) => {setFiltros({...filtros, departamento: e.target.value})}}
                   >
                     <option value="">Seleccione un departamento</option>
                     {departamentos.map(dep => (
@@ -430,7 +430,7 @@ const ComercialPage = () => {
                   >
                     <option value="">Seleccione una actividad</option>
                     {actividades.map(act => (
-                      <option key={act} value={act}>{act}</option>
+                      <option key={act.id} value={act.nombre}>{act.nombre}</option>
                     ))}
                   </select>
                   <ChevronDown className="absolute right-2 top-2.5 text-gray-500 pointer-events-none" size={20} />
@@ -470,7 +470,7 @@ const ComercialPage = () => {
               <button 
                 className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-500 flex items-center gap-2 disabled:opacity-50"
                 onClick={handleBuscarEmpresas}
-                disabled={!filtros.departamento || !filtros.actividad_economica || loading}
+                disabled={(!filtros.departamento && !filtros.actividad_economica) || loading}
               >
                 <Search size={20} />
                 {loading ? 'Buscando...' : 'Buscar Empresas'}
