@@ -101,11 +101,11 @@ const ComercialPage = () => {
       if (filtros.fecha_hasta) params.append('fecha_hasta', filtros.fecha_hasta);
       
       // Llamada a la API de empresas
-      const response = await fetch(`/api/empresas/filtrar?${params}`);
+      const response = await fetch(API_URL + `/empresas/filtrar?${params}`);
       
       if (response.ok) {
         const data = await response.json();
-        setEmpresas(data);
+        setEmpresas(data.empresas);
       } else {
         console.error('Error al buscar empresas:', response.statusText);
         alert('Ocurrió un error al buscar empresas. Por favor intente nuevamente.');

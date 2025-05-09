@@ -1,4 +1,8 @@
 from fastapi import FastAPI, Request
+from fastapi import Query
+from fastapi.responses import JSONResponse
+from typing import Optional
+from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 from fuentes.buscar_coincidencias import buscar_coincidencias
 from resultados.guardar_resultados import guardar_resultado_busqueda
@@ -124,3 +128,48 @@ async def get_departamentos():
     cursor.close()
     conn.close()
     return {"actividades": actividades}
+
+@app.get("/empresas/filtrar")
+def filtrar_empresas(
+    departamento: Optional[str] = Query(None),
+    actividad_economica: Optional[str] = Query(None),
+    nombre_empresa: Optional[str] = Query(None),
+    fecha_desde: Optional[str] = Query(None),
+    fecha_hasta: Optional[str] = Query(None)
+):
+    try:
+        conexion = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
+        cursor = conexion.cursor(dictionary=True)
+
+        query = "SELECT * FROM bdempresasuruguay WHERE 1=1"
+        valores = []
+
+        if departamento:
+            query += " AND departamento = %s"
+            valores.append(departamento)
+        
+        if actividad_economica:
+            query += " AND actividad_economica = %s"
+            valores.append(actividad_economica)
+
+        if nombre_empresa:
+            query += " AND nombre_empresa LIKE %s"
+            valores.append(f"%{nombre_empresa}%")
+
+        # if fecha_desde:
+        #     query += " AND fecha_creacion >= %s"
+        #     valores.append(fecha_desde)
+
+        # if fecha_hasta:
+        #     query += " AND fecha_creacion <= %s"
+        #     valores.append(fecha_hasta)
+
+        cursor.execute(query, valores)
+        empresas = cursor.fetchall()
+        cursor.close()
+        conexion.close()
+
+        return JSONResponse(content={"empresas": empresas})
+    
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
