@@ -16,6 +16,16 @@ const ComercialPage = () => {
     nombre_empresa: ''
   });
   const [kanbanData, setKanbanData] = useState({});
+  const [columnTitles, setColumnTitles] = useState({
+    email_enviado: 'Email Enviado',
+    primer_llamado: 'Primer Llamado',
+    reunion: 'Reunión',
+    envio_propuesta: 'Envío Propuesta',
+    seguimiento: 'Seguimiento',
+    envio_contrato: 'Envío Contrato',
+    contrato_los_servicios: 'Contrato de Servicios',
+    finalizado: 'Finalizado'
+  });
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEmpresa, setSelectedEmpresa] = useState(null);
@@ -582,27 +592,19 @@ const ComercialPage = () => {
             
             {/* Kanban Board */}
             <div className="flex gap-4 overflow-x-auto pb-4 min-h-screen">
-              {Object.keys(kanbanData).map((column) => {
-                const columnTitles = {
-                  email_enviado: 'Email Enviado',
-                  primer_llamado: 'Primer Llamado',
-                  reunion: 'Reunión',
-                  envio_propuesta: 'Envío Propuesta',
-                  seguimiento: 'Seguimiento',
-                  envio_contrato: 'Envío Contrato',
-                  contrato_los_servicios: 'Contrato de Servicios',
-                  finalizado: 'Finalizado'
-                };
+              {Object.keys(columnTitles).map((column) => {
                 
                 return (
                   <div key={column} className="flex-shrink-0 w-72 bg-gray-100 rounded-md p-4">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="font-medium">{columnTitles[column]}</h3>
-                      <span className="text-sm bg-gray-200 px-2 py-1 rounded-full">{kanbanData[column].length}</span>
+                      <span className="text-sm bg-gray-200 px-2 py-1 rounded-full">
+                        {kanbanData[column]?kanbanData[column].length:0}
+                      </span>
                     </div>
                     
                     <div className="space-y-3">
-                      {kanbanData[column].map((empresa) => (
+                      {kanbanData[column] && kanbanData[column].map((empresa) => (
                         <div 
                           key={empresa.kanban_id} 
                           className="bg-white p-3 rounded-md shadow cursor-pointer hover:shadow-md"
