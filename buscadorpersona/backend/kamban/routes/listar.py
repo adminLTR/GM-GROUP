@@ -1,11 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from db.conexion_mysql import obtener_conexion
+import os
 
 router = APIRouter()
 
 @router.get("/kanban/listar")
 def listar_tablero_kanban():
-    conn = obtener_conexion("BUSQUEDADATOS")
+    conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
     cursor = conn.cursor(dictionary=True)
 
     # Obtenemos todas las entradas del tablero con datos de empresa
@@ -14,9 +15,8 @@ def listar_tablero_kanban():
             k.id AS kanban_id,
             k.empresa_id,
             k.estado,
-            k.usuario_responsable,
+            u.username AS responsable,
             k.comentario,
-            k.fecha_creacion,
             e.nombre_empresa,
             e.email,
             e.telefono,
@@ -25,12 +25,14 @@ def listar_tablero_kanban():
             e.localidad,
             e.actividad_economica
         FROM kanban_estado_empresa k
-        JOIN bdempresasuruguay e ON k.empresa_id = e.id
+        INNER JOIN bdempresasuruguay e ON k.empresa_id = e.id
+        LEFT JOIN sistema_seguros.usuarios u ON k.usuario_responsable = u.id_usuario
     """)
 
     filas = cursor.fetchall()
     cursor.close()
     conn.close()
+    print(filas)
 
     # Agrupamos por estado
     tablero = {}

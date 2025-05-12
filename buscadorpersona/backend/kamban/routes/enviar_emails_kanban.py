@@ -7,6 +7,7 @@ from datetime import date
 import mysql.connector
 import requests
 from db.conexion_mysql import obtener_conexion
+import os
 
 router = APIRouter()
 
@@ -86,7 +87,7 @@ def registrar_en_kanban(empresas):
 # Endpoint para filtrar empresas, enviar email y agregarlas al kanban
 @router.post("/enviar-emails-kanban")
 def enviar_emails_y_registrar(filtro: FiltroEnvio):
-    conn = obtener_conexion("BUSQUEDADATOS")
+    conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
     cursor = conn.cursor(dictionary=True)
     parametros = filtro.empresas_ids
 
@@ -118,9 +119,10 @@ def enviar_emails_y_registrar(filtro: FiltroEnvio):
         raise HTTPException(status_code=404, detail="No se encontraron empresas para enviar")
     
 
-    token = obtener_token_teleprom()
-    cantidad_enviados = enviar_emails_teleprom(empresas, filtro.campana_id, token)
-    print(cantidad_enviados)
+    # token = obtener_token_teleprom()
+    # cantidad_enviados = enviar_emails_teleprom(empresas, filtro.campana_id, token)
+    cantidad_enviados = len(parametros)
+    # print(cantidad_enviados)
     registrar_en_kanban(empresas)
 
     return {

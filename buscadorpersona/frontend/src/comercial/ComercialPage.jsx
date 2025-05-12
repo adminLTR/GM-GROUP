@@ -45,10 +45,10 @@ const ComercialPage = () => {
         }
         
         // Get kanban data from API
-        const resKanban = await fetch('/api/kanban/listar');
+        const resKanban = await fetch(API_URL + '/kanban/listar');
         if (resKanban.ok) {
           const kanbanData = await resKanban.json();
-          setKanbanData(kanbanData);
+          setKanbanData(kanbanData.tablero);
         } else {
           // If API fails, initialize with empty columns
           setKanbanData({
@@ -154,7 +154,7 @@ const ComercialPage = () => {
         const resKanban = await fetch(API_URL+'/kanban/listar');
         if (resKanban.ok) {
           const updatedKanbanData = await resKanban.json();
-          setKanbanData(updatedKanbanData);
+          setKanbanData(updatedKanbanData.tablero);
         }
         
         setSelectedEmpresas([]);
@@ -604,7 +604,7 @@ const ComercialPage = () => {
                     <div className="space-y-3">
                       {kanbanData[column].map((empresa) => (
                         <div 
-                          key={empresa.id} 
+                          key={empresa.kanban_id} 
                           className="bg-white p-3 rounded-md shadow cursor-pointer hover:shadow-md"
                           onClick={() => openEmpresaModal(empresa)}
                         >
@@ -629,7 +629,7 @@ const ComercialPage = () => {
                             </div>
                           </div>
                           
-                          {empresa.comentarios && empresa.comentarios.length > 0 && (
+                          {empresa.comentario && empresa.comentario.length > 0 && (
                             <div className="mt-3 pt-3 border-t border-gray-100 text-sm">
                               <div className="flex items-start gap-1">
                                 <MessageSquare size={14} className="mt-1 flex-shrink-0" />
