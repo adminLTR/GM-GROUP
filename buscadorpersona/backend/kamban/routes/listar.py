@@ -32,7 +32,6 @@ def listar_tablero_kanban():
     filas = cursor.fetchall()
     cursor.close()
     conn.close()
-    print(filas)
 
     # Agrupamos por estado
     tablero = {}
