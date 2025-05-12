@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi import Query
 from fastapi.responses import JSONResponse
 from typing import Optional
@@ -10,9 +10,15 @@ from fuentes.validaciones import validar_cedula_uruguaya, validar_rut_uruguayo
 from fuentes.busqueda_google import buscar_en_google
 from resultados.guardar_google import guardar_resultados_google
 from db.conexion_mysql import obtener_conexion
+from utils.utils import verificar_password, crear_token_acceso
 from datetime import datetime
 from dotenv import load_dotenv
 import os
+import mysql.connector
+from mysql.connector import Error
+from kamban.routes.enviar_emails_kanban import router as email_router
+from kamban.routes.listar import router as listar_router
+from pydantic import BaseModel
 
 # Cargar las variables del archivo .env
 load_dotenv()
@@ -26,6 +32,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class LoginInput(BaseModel):
+    username: str
+    password: str
+
+def obtener_usuario_por_username(username: str):
+    try:
+        conn = obtener_conexion(os.getenv("DB_SISTEMA_NAME"))
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM usuarios WHERE username = %s", (username,))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return user
+    except Error as e:
+        print("Error al conectar a MySQL:", e)
+        return None
+
+@app.post("/login")
+def login(login_input: LoginInput):
+    usuario = obtener_usuario_por_username(login_input.username)
+    print(usuario)
+    if not usuario or not verificar_password(login_input.password, usuario["password"]):
+        raise HTTPException(status_code=401, detail="Credenciales inválidas")
+
+    token = crear_token_acceso({"sub": usuario["username"]})
+    print(token)
+    return {"access_token": token, "token_type": "bearer"}
 
 @app.post("/buscar")
 async def buscar(request: Request):
@@ -156,13 +190,13 @@ def filtrar_empresas(
             query += " AND nombre_empresa LIKE %s"
             valores.append(f"%{nombre_empresa}%")
 
-        # if fecha_desde:
-        #     query += " AND fecha_creacion >= %s"
-        #     valores.append(fecha_desde)
+        if fecha_desde:
+            query += " AND fecha_creacion >= %s"
+            valores.append(fecha_desde)
 
-        # if fecha_hasta:
-        #     query += " AND fecha_creacion <= %s"
-        #     valores.append(fecha_hasta)
+        if fecha_hasta:
+            query += " AND fecha_creacion <= %s"
+            valores.append(fecha_hasta)
 
         cursor.execute(query, valores)
         empresas = cursor.fetchall()
@@ -173,3 +207,6 @@ def filtrar_empresas(
     
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+    
+app.include_router(email_router)
+app.include_router(listar_router)

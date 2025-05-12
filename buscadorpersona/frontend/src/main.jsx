@@ -5,6 +5,7 @@ import Home from "./Home"
 import ConsultaPage from "./consulta/ConsultaPage"
 import ComercialPage from "./comercial/ComercialPage"
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import LoginPage from './login/Login'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -21,6 +22,10 @@ createRoot(document.getElementById('root')).render(
         path: '/comercial',
         element: <ComercialPage/>
       },
+      {
+        path: "/login",
+        element: <LoginPage/>
+      }
 
     ])}/>
   </StrictMode>,

@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token || token.length <= 0) {
+      navigate('/login')
+    }
+  }, [])
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-center px-4">
       <h1 className="text-3xl font-bold mb-10 text-indigo-800">Bienvenido a GM Group</h1>

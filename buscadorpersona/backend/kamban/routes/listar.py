@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException
-from db.conexion_bdempresasuruguay import obtener_conexion_busquedadatos
+from db.conexion_mysql import obtener_conexion
 
 router = APIRouter()
 
 @router.get("/kanban/listar")
 def listar_tablero_kanban():
-    conn = obtener_conexion_busquedadatos()
+    conn = obtener_conexion("BUSQUEDADATOS")
     cursor = conn.cursor(dictionary=True)
 
     # Obtenemos todas las entradas del tablero con datos de empresa

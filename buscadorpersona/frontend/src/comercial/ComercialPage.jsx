@@ -130,6 +130,7 @@ const ComercialPage = () => {
     try {
       // Preparamos los datos para enviar a la API
       const empresasIds = selectedEmpresas;
+      console.log(empresasIds)
       const payload = {
         departamento: filtros.departamento,
         actividad_economica: filtros.actividad_economica,
@@ -138,7 +139,7 @@ const ComercialPage = () => {
       };
       
       // Llamada a la API para enviar emails y crear en kanban
-      const response = await fetch('/api/enviar-emails-kanban', {
+      const response = await fetch(API_URL + '/enviar-emails-kanban', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -150,7 +151,7 @@ const ComercialPage = () => {
         const result = await response.json();
         
         // Actualizamos el kanban con los nuevos datos
-        const resKanban = await fetch('/api/kanban/listar');
+        const resKanban = await fetch(API_URL+'/kanban/listar');
         if (resKanban.ok) {
           const updatedKanbanData = await resKanban.json();
           setKanbanData(updatedKanbanData);

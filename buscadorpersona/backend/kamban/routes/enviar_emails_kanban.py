@@ -6,7 +6,7 @@ from typing import Optional
 from datetime import date
 import mysql.connector
 import requests
-from db.conexion_bdempresasuruguay import obtener_conexion_busquedadatos
+from db.conexion_mysql import obtener_conexion
 
 router = APIRouter()
 
@@ -15,6 +15,7 @@ class FiltroEnvio(BaseModel):
     departamento: str
     actividad_economica: str
     campana_id: int
+    empresas_ids: list
     fecha_desde: Optional[date] = None
     fecha_hasta: Optional[date] = None
 
@@ -69,7 +70,7 @@ def enviar_emails_teleprom(empresas, campana_id, token):
 
 # Función para registrar las empresas en la tabla de estado Kanban
 def registrar_en_kanban(empresas):
-    conn = obtener_conexion_busquedadatos()
+    conn = obtener_conexion("BUSQUEDADATOS")
     cursor = conn.cursor()
     for emp in empresas:
         if not emp["id"]:
@@ -85,26 +86,29 @@ def registrar_en_kanban(empresas):
 # Endpoint para filtrar empresas, enviar email y agregarlas al kanban
 @router.post("/enviar-emails-kanban")
 def enviar_emails_y_registrar(filtro: FiltroEnvio):
-    conn = obtener_conexion_busquedadatos()
+    conn = obtener_conexion("BUSQUEDADATOS")
     cursor = conn.cursor(dictionary=True)
+    parametros = filtro.empresas_ids
 
     # Construcción dinámica del query con fechas opcionales
-    query = """
-        SELECT * FROM bdempresasuruguay
-        WHERE departamento LIKE %s
-        AND actividad_economica LIKE %s
-        AND email IS NOT NULL AND email <> ''
-    """
-    parametros = [f"%{filtro.departamento}%", f"%{filtro.actividad_economica}%"]
+    # query = """
+    #     SELECT * FROM bdempresasuruguay
+    #     WHERE departamento LIKE %s
+    #     AND actividad_economica LIKE %s
+    #     AND email IS NOT NULL AND email <> ''
+    # """
+    # parametros = [f"%{filtro.departamento}%", f"%{filtro.actividad_economica}%"]
 
-    if filtro.fecha_desde:
-        query += " AND fecha_creacion >= %s"
-        parametros.append(filtro.fecha_desde)
+    # if filtro.fecha_desde:
+    #     query += " AND fecha_creacion >= %s"
+    #     parametros.append(filtro.fecha_desde)
 
-    if filtro.fecha_hasta:
-        query += " AND fecha_creacion <= %s"
-        parametros.append(filtro.fecha_hasta)
-
+    # if filtro.fecha_hasta:
+    #     query += " AND fecha_creacion <= %s"
+    #     parametros.append(filtro.fecha_hasta)
+    placeholders = ','.join(['%s'] * len(parametros))
+    query = f"SELECT * FROM bdempresasuruguay WHERE id IN ({placeholders})"
+    
     cursor.execute(query, parametros)
     empresas = cursor.fetchall()
     cursor.close()
@@ -112,9 +116,11 @@ def enviar_emails_y_registrar(filtro: FiltroEnvio):
 
     if not empresas:
         raise HTTPException(status_code=404, detail="No se encontraron empresas para enviar")
+    
 
     token = obtener_token_teleprom()
     cantidad_enviados = enviar_emails_teleprom(empresas, filtro.campana_id, token)
+    print(cantidad_enviados)
     registrar_en_kanban(empresas)
 
     return {
