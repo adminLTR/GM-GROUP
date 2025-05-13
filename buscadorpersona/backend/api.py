@@ -60,6 +60,16 @@ def login(login_input: LoginInput):
     token = crear_token_acceso({"sub": usuario["username"]})
     return {"access_token": token, "token_type": "bearer"}
 
+@app.get("/get_users")
+def get_users():
+    conn = obtener_conexion(os.getenv("DB_SISTEMA_NAME"))
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT id_usuario, username FROM usuarios")
+    users = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return {'users': users}
+
 @app.post("/buscar")
 async def buscar(request: Request):
     data = await request.json()

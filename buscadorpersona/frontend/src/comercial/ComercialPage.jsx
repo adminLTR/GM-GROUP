@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Mail, ChevronDown, User, Phone, MapPin, Calendar, MessageSquare, ArrowRight, Plus, Edit, Trash, CheckSquare, Square } from 'lucide-react';
+import UserSelect from "./UserSelect"
 
 // Main App Component
 const ComercialPage = () => {
   const [activeTab, setActiveTab] = useState('filter');
   const [selectedEmpresas, setSelectedEmpresas] = useState([]);
   const [empresas, setEmpresas] = useState([]);
+  const [usuarios, setUsuarios] = useState([])
+  const [selectedUser, setSelectedUser] = useState(localStorage.getItem("username"));
   const [departamentos, setDepartamentos] = useState([]);
   const [actividades, setActividades] = useState([]);
   const [filtros, setFiltros] = useState({
@@ -54,8 +57,37 @@ const ComercialPage = () => {
           console.error('Error fetching actividades');
         }
         
-        // Get kanban data from API
-        const resKanban = await fetch(API_URL + '/kanban/listar?username=' + localStorage.getItem("username"));
+        const resUsuarios = await fetch(API_URL + '/get_users');
+        if (resUsuarios.ok) {
+          const usuariosData = await resUsuarios.json();
+          setUsuarios(usuariosData.users);
+        } else {
+          console.error('Error fetching usuarios');
+        }
+        
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+        // Initialize with empty data if APIs fail
+        setKanbanData({
+          email_enviado: [],
+          primer_llamado: [],
+          reunion: [],
+          envio_propuesta: [],
+          seguimiento: [],
+          envio_contrato: [],
+          contrato_los_servicios: [],
+          finalizado: []
+        });
+      }
+    };
+    
+    fetchInitialData();
+  }, []);
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const resKanban = await fetch(API_URL + '/kanban/listar?username=' + selectedUser);
         if (resKanban.ok) {
           const kanbanData = await resKanban.json();
           setKanbanData(kanbanData.tablero);
@@ -87,9 +119,8 @@ const ComercialPage = () => {
         });
       }
     };
-    
-    fetchInitialData();
-  }, []);
+    fetchInitialData()
+  }, [selectedUser]);
 
   // Buscar empresas desde la API
   const handleBuscarEmpresas = async () => {
@@ -162,7 +193,7 @@ const ComercialPage = () => {
         const result = await response.json();
         
         // Actualizamos el kanban con los nuevos datos
-        const resKanban = await fetch(API_URL + '/kanban/listar?username=' + localStorage.getItem("username"));
+        const resKanban = await fetch(API_URL + '/kanban/listar?username=' + selectedUser);
         if (resKanban.ok) {
           const updatedKanbanData = await resKanban.json();
           setKanbanData(updatedKanbanData.tablero);
@@ -590,7 +621,11 @@ const ComercialPage = () => {
         ) : (
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-6">Tablero Kanban</h2>
-            
+              <UserSelect
+                users={usuarios}
+                value={selectedUser}
+                onChange={setSelectedUser}
+              />
             {/* Kanban Board */}
             <div className="flex gap-4 overflow-x-auto pb-4 min-h-screen">
               {Object.keys(columnTitles).map((column) => {
