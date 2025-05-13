@@ -18,6 +18,7 @@ import mysql.connector
 from mysql.connector import Error
 from kamban.routes.enviar_emails_kanban import router as email_router
 from kamban.routes.listar import router as listar_router
+from kamban.routes.mover import router as mover_router
 from pydantic import BaseModel
 
 # Cargar las variables del archivo .env
@@ -219,3 +220,4 @@ def filtrar_empresas(
     
 app.include_router(email_router)
 app.include_router(listar_router)
+app.include_router(mover_router)

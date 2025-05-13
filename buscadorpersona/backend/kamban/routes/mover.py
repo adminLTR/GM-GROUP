@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from db.conexion_bdempresasuruguay import obtener_conexion_busquedadatos
-
+from db.conexion_mysql import obtener_conexion
+import os
 router = APIRouter()
 
 # Modelo del cuerpo que recibe la API
@@ -28,7 +28,7 @@ def mover_tarjeta_kanban(mov: MovimientoKanban):
     if mov.nuevo_estado not in ESTADOS_VALIDOS:
         raise HTTPException(status_code=400, detail="Estado no válido.")
 
-    conn = obtener_conexion_busquedadatos()
+    conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NA,E"))
     cursor = conn.cursor()
 
     # Verificamos que la empresa esté ya en el tablero

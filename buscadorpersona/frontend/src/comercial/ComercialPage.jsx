@@ -93,7 +93,6 @@ const ComercialPage = () => {
           const kanbanData = await resKanban.json();
           setKanbanData(kanbanData.tablero);
           setDisabledSelect(!kanbanData.es_superuser)
-          console.log(!kanbanData.es_superuser)
         } else {
           // If API fails, initialize with empty columns
           setKanbanData({
@@ -259,20 +258,24 @@ const ComercialPage = () => {
       });
       
       // Add to target column
-      updatedKanban[targetColumn] = [...updatedKanban[targetColumn], empresa];
-      
+      if (updatedKanban[targetColumn]) {
+        updatedKanban[targetColumn] = [...updatedKanban[targetColumn], empresa];
+      } else {
+        updatedKanban[targetColumn] = [empresa];
+      }
       setKanbanData(updatedKanban);
       
       // Luego enviar la actualización a la API
-      const response = await fetch('/api/kanban/mover-empresa', {
+      const response = await fetch(API_URL + '/kanban/mover', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          empresa_id: empresa.id,
-          estado_anterior: currentColumn,
-          estado_nuevo: targetColumn
+          empresa_id: empresa.empresa_id,
+          // estado_anterior: currentColumn,
+          usuario: selectedUser,
+          nuevo_estado: targetColumn
         })
       });
       
@@ -280,7 +283,7 @@ const ComercialPage = () => {
         console.error('Error al mover empresa en el kanban:', response.statusText);
         // Si hay error, podríamos revertir el cambio local
         // o recargar el kanban completo
-        const resKanban = await fetch('/api/kanban/listar');
+        const resKanban = await fetch(API_URL + '/kanban/listar?username=' + selectedUser);
         if (resKanban.ok) {
           const kanbanData = await resKanban.json();
           setKanbanData(kanbanData);
@@ -290,7 +293,7 @@ const ComercialPage = () => {
       console.error('Error al mover empresa en el kanban:', error);
       // Recargar el kanban para restaurar el estado correcto
       try {
-        const resKanban = await fetch('/api/kanban/listar');
+        const resKanban = await fetch(API_URL + '/kanban/listar?username=' + selectedUser);
         if (resKanban.ok) {
           const kanbanData = await resKanban.json();
           setKanbanData(kanbanData);
@@ -770,6 +773,7 @@ const ComercialPage = () => {
                       
                       if (currentColumn && currentColumn !== targetColumn) {
                         const empresaToMove = kanbanData[currentColumn].find(e => e.id === selectedEmpresa.id);
+                        console.log(empresaToMove)
                         moveCard(empresaToMove, targetColumn);
                       }
                       
