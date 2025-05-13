@@ -1,7 +1,7 @@
 // components/UserSelect.jsx
 import Select from 'react-select';
 
-export default function UserSelect({ users, onChange, value }) {
+export default function UserSelect({ users, onChange, value, isDisabled = false }) {
   const options = users.map(user => ({
     value: user.username,
     label: user.username
@@ -18,6 +18,7 @@ export default function UserSelect({ users, onChange, value }) {
         onChange={(selected) => onChange(selected.value)}
         placeholder="Buscar usuario..."
         isSearchable
+        isDisabled={isDisabled}
       />
     </div>
   );

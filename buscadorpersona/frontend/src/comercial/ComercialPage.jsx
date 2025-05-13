@@ -9,6 +9,7 @@ const ComercialPage = () => {
   const [empresas, setEmpresas] = useState([]);
   const [usuarios, setUsuarios] = useState([])
   const [selectedUser, setSelectedUser] = useState(localStorage.getItem("username"));
+  const [disabledSelect, setDisabledSelect] = useState(true);
   const [departamentos, setDepartamentos] = useState([]);
   const [actividades, setActividades] = useState([]);
   const [filtros, setFiltros] = useState({
@@ -91,6 +92,8 @@ const ComercialPage = () => {
         if (resKanban.ok) {
           const kanbanData = await resKanban.json();
           setKanbanData(kanbanData.tablero);
+          setDisabledSelect(!kanbanData.es_superuser)
+          console.log(!kanbanData.es_superuser)
         } else {
           // If API fails, initialize with empty columns
           setKanbanData({
@@ -103,6 +106,7 @@ const ComercialPage = () => {
             contrato_los_servicios: [],
             finalizado: []
           });
+          setDisabledSelect(true)
         }
       } catch (error) {
         console.error('Error fetching initial data:', error);
@@ -625,6 +629,7 @@ const ComercialPage = () => {
                 users={usuarios}
                 value={selectedUser}
                 onChange={setSelectedUser}
+                isDisabled={disabledSelect}
               />
             {/* Kanban Board */}
             <div className="flex gap-4 overflow-x-auto pb-4 min-h-screen">
@@ -771,18 +776,7 @@ const ComercialPage = () => {
                       setModalVisible(false);
                     }}
                   >
-                    {Object.keys(kanbanData).map((column) => {
-                      const columnTitles = {
-                        email_enviado: 'Email Enviado',
-                        primer_llamado: 'Primer Llamado',
-                        reunion: 'Reunión',
-                        envio_propuesta: 'Envío Propuesta',
-                        seguimiento: 'Seguimiento',
-                        envio_contrato: 'Envío Contrato',
-                        contrato_los_servicios: 'Contrato de Servicios',
-                        finalizado: 'Finalizado'
-                      };
-                      
+                    {Object.keys(columnTitles).map((column) => {
                       return (
                         <option key={column} value={column}>
                           {columnTitles[column]}
