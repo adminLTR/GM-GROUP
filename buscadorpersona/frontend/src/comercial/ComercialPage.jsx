@@ -55,7 +55,7 @@ const ComercialPage = () => {
         }
         
         // Get kanban data from API
-        const resKanban = await fetch(API_URL + '/kanban/listar');
+        const resKanban = await fetch(API_URL + '/kanban/listar?username=' + localStorage.getItem("username"));
         if (resKanban.ok) {
           const kanbanData = await resKanban.json();
           setKanbanData(kanbanData.tablero);
@@ -145,6 +145,7 @@ const ComercialPage = () => {
         departamento: filtros.departamento,
         actividad_economica: filtros.actividad_economica,
         empresas_ids: empresasIds,
+        responsable: localStorage.getItem('username'),
         campana_id: 123 // Aquí podrías tener un campo para seleccionar la campaña
       };
       
@@ -161,7 +162,7 @@ const ComercialPage = () => {
         const result = await response.json();
         
         // Actualizamos el kanban con los nuevos datos
-        const resKanban = await fetch(API_URL+'/kanban/listar');
+        const resKanban = await fetch(API_URL + '/kanban/listar?username=' + localStorage.getItem("username"));
         if (resKanban.ok) {
           const updatedKanbanData = await resKanban.json();
           setKanbanData(updatedKanbanData.tablero);
@@ -627,7 +628,7 @@ const ComercialPage = () => {
                             </div>
                             <div className="flex items-center gap-1">
                               <User size={14} />
-                              <span>Resp: {empresa.responsable}</span>
+                              <span>Resp: {empresa.usuario_responsable}</span>
                             </div>
                           </div>
                           

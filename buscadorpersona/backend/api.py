@@ -58,7 +58,6 @@ def login(login_input: LoginInput):
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
     token = crear_token_acceso({"sub": usuario["username"]})
-    print(token)
     return {"access_token": token, "token_type": "bearer"}
 
 @app.post("/buscar")

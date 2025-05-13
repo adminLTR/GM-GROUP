@@ -19,6 +19,7 @@ class FiltroEnvio(BaseModel):
     empresas_ids: list
     fecha_desde: Optional[date] = None
     fecha_hasta: Optional[date] = None
+    responsable: str
 
 # Función para obtener token de autenticación en Teleprom
 def obtener_token_teleprom():
@@ -70,16 +71,16 @@ def enviar_emails_teleprom(empresas, campana_id, token):
     return len(mensajes)
 
 # Función para registrar las empresas en la tabla de estado Kanban
-def registrar_en_kanban(empresas):
+def registrar_en_kanban(empresas, responsable):
     conn = obtener_conexion("BUSQUEDADATOS")
     cursor = conn.cursor()
     for emp in empresas:
         if not emp["id"]:
             continue
         cursor.execute("""
-            INSERT INTO kanban_estado_empresa (empresa_id, estado)
-            VALUES (%s, 'email_enviado')
-        """, (emp["id"],))
+            INSERT INTO kanban_estado_empresa (empresa_id, estado, usuario_responsable)
+            VALUES (%s, 'email_enviado', %s)
+        """, (emp["id"], responsable))
     conn.commit()
     cursor.close()
     conn.close()
@@ -112,18 +113,24 @@ def enviar_emails_y_registrar(filtro: FiltroEnvio):
     
     cursor.execute(query, parametros)
     empresas = cursor.fetchall()
+
+    query = "SELECT * FROM sistema_seguros.usuarios WHERE username = %s"
+    cursor.execute(query, (filtro.responsable,))
+    responsable = cursor.fetchone()
     cursor.close()
     conn.close()
 
     if not empresas:
         raise HTTPException(status_code=404, detail="No se encontraron empresas para enviar")
+    if not responsable:
+        raise HTTPException(status_code=404, detail="No se encontró el usuario")
     
 
     # token = obtener_token_teleprom()
     # cantidad_enviados = enviar_emails_teleprom(empresas, filtro.campana_id, token)
     cantidad_enviados = len(parametros)
     # print(cantidad_enviados)
-    registrar_en_kanban(empresas)
+    registrar_en_kanban(empresas, responsable["username"])
 
     return {
         "status": "ok",

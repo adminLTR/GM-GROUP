@@ -24,6 +24,7 @@ export default function LoginPage() {
     if (response.ok) {
         const res = await response.json()
         localStorage.setItem('token', res.access_token);
+        localStorage.setItem('username', username);
         window.location.href = "/";
     } else {
         withReactContent(Swal).fire({
