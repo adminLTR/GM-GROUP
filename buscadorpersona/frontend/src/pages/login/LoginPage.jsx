@@ -23,8 +23,9 @@ export default function LoginPage() {
     });
     if (response.ok) {
         const res = await response.json()
-        localStorage.setItem('token', res.access_token);
-        localStorage.setItem('username', username);
+        sessionStorage.setItem('token', res.access_token);
+        sessionStorage.setItem('username', username);
+        sessionStorage.setItem("superuser", res.superuser);
         window.location.href = "/";
     } else {
         withReactContent(Swal).fire({
@@ -92,13 +93,6 @@ export default function LoginPage() {
           className="w-full bg-indigo-700 text-white py-2 rounded-md hover:bg-indigo-600 transition-all duration-300 cursor-pointer"
         >
           Ingresar
-        </button>
-
-        <button
-          type="button"
-          className="w-full mt-3 text-indigo-700 hover:text-indigo-600 transition-all cursor-pointer bg-transparent border-0 hover:underline"
-        >
-          ¿No tienes cuenta? Crear cuenta
         </button>
       </form>
 

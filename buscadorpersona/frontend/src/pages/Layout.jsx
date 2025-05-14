@@ -9,17 +9,17 @@ export default function Layout() {
     const [username, setUsername] = useState("")
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         if (!token || token.length <= 0) {
             navigate('/login')
         } else {
-            setUsername(localStorage.getItem("username"))
+            setUsername(sessionStorage.getItem("username"))
         }
     }, [])
 
     const onLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("username");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("username");
         window.location.href = "/login"
     }
     return <div>

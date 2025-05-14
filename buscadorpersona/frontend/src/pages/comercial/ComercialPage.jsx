@@ -11,7 +11,7 @@ const ComercialPage = () => {
   const [selectedEmpresas, setSelectedEmpresas] = useState([]);
   const [empresas, setEmpresas] = useState([]);
   const [usuarios, setUsuarios] = useState([])
-  const [selectedUser, setSelectedUser] = useState(localStorage.getItem("username"));
+  const [selectedUser, setSelectedUser] = useState(sessionStorage.getItem("username"));
   const [disabledSelect, setDisabledSelect] = useState(true);
   const [departamentos, setDepartamentos] = useState([]);
   const [actividades, setActividades] = useState([]);

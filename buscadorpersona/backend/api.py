@@ -54,12 +54,11 @@ def obtener_usuario_por_username(username: str):
 @app.post("/login")
 def login(login_input: LoginInput):
     usuario = obtener_usuario_por_username(login_input.username)
-    print(usuario)
     if not usuario or not verificar_password(login_input.password, usuario["password"]):
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
     token = crear_token_acceso({"sub": usuario["username"]})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer", "superuser":usuario["es_superuser"]}
 
 @app.get("/get_users")
 def get_users():

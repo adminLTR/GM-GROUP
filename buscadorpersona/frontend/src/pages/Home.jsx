@@ -1,8 +1,15 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 
 const Home = () => {
   const navigate = useNavigate();
+
+  const [superuser, setSuperuser] = useState(false);
+
+  useEffect(()=>{
+    setSuperuser(sessionStorage.getItem("superuser"))
+  }, [])
   
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-center px-4">
@@ -15,6 +22,14 @@ const Home = () => {
           Consulta de Personas
         </Button>
       </div>
+      {superuser && 
+        <div className="flex justify-center items-center">
+          <Button onCLick={() => navigate('/register')}>
+            Registrar un usuario
+          </Button>
+        </div>
+      }
+      
     </div>
   );
 };
