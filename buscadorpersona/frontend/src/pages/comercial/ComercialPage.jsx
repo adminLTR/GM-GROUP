@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Mail, ChevronDown, User, Phone, MapPin, Calendar, MessageSquare, ArrowRight, Plus, Edit, Trash, CheckSquare, Square } from 'lucide-react';
-import UserSelect from "./UserSelect"
+import { useState, useEffect } from 'react';
+import { Search, Mail, ChevronDown, User, Phone, MapPin, MessageSquare, Edit, CheckSquare, Square } from 'lucide-react';
+import UserSelect from "./components/UserSelect"
+import Header from './components/Header';
+import Filtros from './components/Filtros';
+import Button from '../../components/Button';
 
 // Main App Component
 const ComercialPage = () => {
@@ -422,27 +425,7 @@ const ComercialPage = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-indigo-600 text-white shadow-lg">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Sistema de Gestión Comercial</h1>
-            <div className="flex space-x-4">
-              <button 
-                className={`px-4 py-2 rounded-md transition-colors ${activeTab === 'filter' ? 'bg-white text-indigo-600' : 'bg-indigo-500 text-white hover:bg-indigo-400'}`}
-                onClick={() => setActiveTab('filter')}
-              >
-                Filtrar Empresas
-              </button>
-              <button 
-                className={`px-4 py-2 rounded-md transition-colors ${activeTab === 'kanban' ? 'bg-white text-indigo-600' : 'bg-indigo-500 text-white hover:bg-indigo-400'}`}
-                onClick={() => setActiveTab('kanban')}
-              >
-                Tablero Kanban
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header activeTab={activeTab} setActiveTab={setActiveTab}/>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
@@ -451,72 +434,19 @@ const ComercialPage = () => {
             <h2 className="text-xl font-semibold mb-6">Filtrar Empresas</h2>
             
             {/* Filtros */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
-                <div className="relative">
-                  <select 
-                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
-                    value={filtros.departamento}
-                    onChange={(e) => {setFiltros({...filtros, departamento: e.target.value})}}
-                  >
-                    <option value="">Seleccione un departamento</option>
-                    {departamentos.map(dep => (
-                      <option key={dep.id_departamento} value={dep.nombre_departamento}>
-                        {dep.nombre_departamento}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-2 top-2.5 text-gray-500 pointer-events-none" size={20} />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Actividad Económica</label>
-                <div className="relative">
-                  <select 
-                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
-                    value={filtros.actividad_economica}
-                    onChange={(e) => setFiltros({...filtros, actividad_economica: e.target.value})}
-                  >
-                    <option value="">Seleccione una actividad</option>
-                    {actividades.map(act => (
-                      <option key={act.id} value={act.nombre}>{act.nombre}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-2 top-2.5 text-gray-500 pointer-events-none" size={20} />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre de Empresa</label>
-                <input 
-                  type="text" 
-                  className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Buscar por nombre..."
-                  value={filtros.nombre_empresa}
-                  onChange={(e) => setFiltros({...filtros, nombre_empresa: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Desde</label>
-                <input 
-                  type="date" 
-                  className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                  value={filtros.fecha_desde}
-                  onChange={(e) => setFiltros({...filtros, fecha_desde: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Hasta</label>
-                <input 
-                  type="date" 
-                  className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                  value={filtros.fecha_hasta}
-                  onChange={(e) => setFiltros({...filtros, fecha_hasta: e.target.value})}
-                />
-              </div>
-            </div>
+            <Filtros 
+              filtros={filtros}
+              setFiltros={setFiltros}
+              departamentos={departamentos}
+              actividades={actividades}
+            />
             
             <div className="flex justify-center mb-6">
+              {/* <Button onClick={handleBuscarEmpresas}
+                disabled={(!filtros.departamento && !filtros.actividad_economica) || loading}>
+                <Search size={20} />
+                {loading ? 'Buscando...' : 'Buscar Empresas'}
+              </Button> */}
               <button 
                 className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-500 flex items-center gap-2 disabled:opacity-50"
                 onClick={handleBuscarEmpresas}
