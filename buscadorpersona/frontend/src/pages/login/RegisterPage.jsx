@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 export default function RegisterPage() {
     const [username, setUsername] = useState("");
@@ -6,6 +8,7 @@ export default function RegisterPage() {
     const [nombres, setNombres] = useState("");
     const [email, setEmail] = useState("");
     const [telefono, setTelefono] = useState("");
+    const [superuser, setSuperuser] = useState(false);
     const [error, setError] = useState("");
   
     const API_URL = import.meta.env.VITE_API_URL;
@@ -21,24 +24,32 @@ export default function RegisterPage() {
     const handleSubmit = async (e) => {
       e.preventDefault();
   
-      const response = await fetch(API_URL + '/login', {
+      const response = await fetch(API_URL + '/usuarios/crear', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-          username, password
+          username,
+          password,
+          nombres,
+          email,
+          telefono,
+          superuser
       })
       });
+      console.log(response)
       if (response.ok) {
-          const res = await response.json()
-          sessionStorage.setItem('token', res.access_token);
-          sessionStorage.setItem('username', username);
-          sessionStorage.setItem("superuser", res.superuser);
+          // const res = await response.json()
+          withReactContent(Swal).fire({
+              title: "Registro con exito",
+              text: "Usuario registrado con exito",
+              icon: "success"
+          });
           window.location.href = "/";
       } else {
           withReactContent(Swal).fire({
-              title: "Error al logearse",
+              title: "Error al registrar",
               text: "Credenciales incorrectas",
               icon: "error"
           });
@@ -97,7 +108,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="mb-6">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
             Nombre
           </label>
           <input
@@ -112,14 +123,14 @@ export default function RegisterPage() {
         </div>
 
         <div className="mb-6">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
             Email
           </label>
           <input
             id="email"
             type="email"
             placeholder="Ingresa tu correo electronico"
-            value={nombres}
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-700 transition-all duration-300"
@@ -127,7 +138,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="mb-6">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">
             Telefono
           </label>
           <input
@@ -138,6 +149,18 @@ export default function RegisterPage() {
             onChange={(e) => setTelefono(e.target.value)}
             required
             className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-700 transition-all duration-300"
+          />
+        </div>
+
+        <div className="mb-6">
+          <label htmlFor="superuser" className="block text-sm font-medium text-gray-700">
+            Superuser
+          </label>
+          <input
+            id="superuser"
+            type="checkbox"
+            value={superuser}
+            onChange={(e) => setSuperuser(e.target.checked)}
           />
         </div>
 

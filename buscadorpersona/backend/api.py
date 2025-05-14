@@ -20,10 +20,11 @@ from kamban.routes.enviar_emails_kanban import router as email_router
 from kamban.routes.listar import router as listar_router
 from kamban.routes.mover import router as mover_router
 from pydantic import BaseModel
+import bcrypt
 
 # Cargar las variables del archivo .env
 load_dotenv()
-app = FastAPI()
+app = FastAPI(debug=True)
 
 # Habilitar CORS para el frontend local
 app.add_middleware(
@@ -59,6 +60,42 @@ def login(login_input: LoginInput):
 
     token = crear_token_acceso({"sub": usuario["username"]})
     return {"access_token": token, "token_type": "bearer", "superuser":usuario["es_superuser"]}
+
+class Usuario(BaseModel):
+    username: str
+    password: str
+    nombres: str
+    email: str
+    telefono: str
+    superuser: bool
+@app.post("/usuarios/crear")
+def crear_usuario(usuario: Usuario):
+    try:
+        conn = obtener_conexion(os.getenv("DB_SISTEMA_NAME"))
+        cursor = conn.cursor()
+        hashed_password = bcrypt.hashpw(usuario.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        print(hashed_password)
+        
+        cursor.execute("""
+            INSERT INTO usuarios (username, password, nombre_completo, email, telefono, es_superuser, estado)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (
+            usuario.username,
+            hashed_password,
+            usuario.nombres,
+            usuario.email,
+            usuario.telefono,
+            usuario.superuser,
+            'activo'
+        ))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return {"status": "ok", "message": "Usuario creado correctamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/get_users")
 def get_users():
