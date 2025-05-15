@@ -18,7 +18,8 @@ export default function UserSelect({ users, onChange, value, isDisabled = false 
         onChange={(selected) => onChange(selected.value)}
         placeholder="Buscar usuario..."
         isSearchable
-        isDisabled={isDisabled}
+        // isDisabled={isDisabled}
+        isDisabled={true}
       />
     </div>
   );

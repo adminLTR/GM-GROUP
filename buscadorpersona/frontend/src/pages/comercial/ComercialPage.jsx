@@ -243,12 +243,7 @@ const ComercialPage = () => {
   const moveCard = async (empresa, targetColumn) => {
     try {
       // Identificar columna actual
-      let currentColumn = '';
-      Object.keys(kanbanData).forEach(column => {
-        if (kanbanData[column].some(e => e.id === empresa.id)) {
-          currentColumn = column;
-        }
-      });
+      let currentColumn = empresa.estado;
       
       if (!currentColumn || currentColumn === targetColumn) return;
       
@@ -256,10 +251,13 @@ const ComercialPage = () => {
       const updatedKanban = {...kanbanData};
       
       // Remove from current column
+      console.log(kanbanData)
+      console.log({...kanbanData})
+      console.log(updatedKanban)
+      
       Object.keys(updatedKanban).forEach(column => {
         updatedKanban[column] = updatedKanban[column].filter(e => e.id !== empresa.id);
       });
-      
       // Add to target column
       if (updatedKanban[targetColumn]) {
         updatedKanban[targetColumn] = [...updatedKanban[targetColumn], empresa];
@@ -580,19 +578,16 @@ const ComercialPage = () => {
                 <div className="relative">
                   <select 
                     className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
-                    value={Object.keys(kanbanData).find(key => 
-                      kanbanData[key].some(e => e.id === selectedEmpresa.id)
-                    ) || ''}
+                    value={selectedEmpresa.estado}
                     onChange={(e) => {
                       const targetColumn = e.target.value;
-                      const currentColumn = Object.keys(kanbanData).find(key => 
-                        kanbanData[key].some(e => e.id === selectedEmpresa.id)
-                      );
+                      const currentColumn = selectedEmpresa.estado;
                       
                       if (currentColumn && currentColumn !== targetColumn) {
-                        const empresaToMove = kanbanData[currentColumn].find(e => e.id === selectedEmpresa.id);
-                        console.log(empresaToMove)
-                        moveCard(empresaToMove, targetColumn);
+                        // const empresaToMove = kanbanData[currentColumn].find(e => e.id === selectedEmpresa.id);
+                        // console.log(empresaToMove)
+                        // console.log(selectedEmpresa)
+                        moveCard(selectedEmpresa, targetColumn);
                       }
                       
                       setModalVisible(false);
