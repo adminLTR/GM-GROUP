@@ -7,11 +7,11 @@ export default function Header({activeTab, setActiveTab}) {
             <h1 className="text-2xl font-bold">Sistema de Gestión Comercial</h1>
             <div className="flex space-x-4">
                 <Button type={activeTab === 'filter' ? 'outline' : 'normal'}
-                    onCLick={() => setActiveTab('filter')}>
+                    onClick={() => setActiveTab('filter')}>
                     Filtrar Empresas
                 </Button>
                 <Button type={activeTab === 'kanban' ? 'outline' : 'normal'}
-                    onCLick={() => setActiveTab('kanban')}>
+                    onClick={() => setActiveTab('kanban')}>
                     Tablero Kanban
                 </Button>
             </div>

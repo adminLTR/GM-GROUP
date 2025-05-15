@@ -22,12 +22,12 @@ const Home = () => {
           Consulta de Personas
         </Button>
       </div>
-      {superuser && 
-        <div className="flex justify-center items-center">
+      {superuser == "1" && 
+        (<div className="flex justify-center items-center">
           <Button onClick={() => navigate('/register')}>
             Registrar un usuario
           </Button>
-        </div>
+        </div>)
       }
       
     </div>

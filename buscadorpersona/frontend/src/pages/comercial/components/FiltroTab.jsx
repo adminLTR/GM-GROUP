@@ -1,6 +1,7 @@
 import Filtros from './Filtros';
 import Resultados from './Resultados';
 import Button from '../../../components/Button'
+import { Search } from 'lucide-react';
 
 export default function FiltroTab({
     filtros, 

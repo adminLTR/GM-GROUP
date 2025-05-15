@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Mail, ChevronDown, User, Phone, MapPin, MessageSquare, Edit } from 'lucide-react';
+import { Mail, ChevronDown, User, Phone, MapPin, MessageSquare, Edit } from 'lucide-react';
 import UserSelect from "./components/UserSelect"
 import Header from './components/Header';
 import FiltroTab from './components/FiltroTab';
