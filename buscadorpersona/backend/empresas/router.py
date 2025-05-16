@@ -1,8 +1,10 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi import Query
 from typing import Optional
 from db.conexion_mysql import obtener_conexion
 import os
+
+from .models import *
 
 router = APIRouter()
 
@@ -27,7 +29,7 @@ async def get_departamentos():
     return {"actividades": actividades}
 
 @router.get("/filtrar")
-def filtrar_empresas(
+async def filtrar_empresas(
     departamentos: Optional[str] = Query(None),
     actividades: Optional[str] = Query(None),
     nombre_empresa: Optional[str] = Query(None),
@@ -75,3 +77,37 @@ def filtrar_empresas(
     conexion.close()
 
     return {"empresas": empresas}
+
+@router.post("/agregar")
+async def agregar_empresa(empresa: EmpresaCreate):
+    conexion = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
+    cursor = conexion.cursor()
+
+    try:
+        query = """
+            INSERT INTO bdempresasuruguay 
+            (nombre_empresa, direccion, departamento, localidad, email, telefono, pagina_web, actividad_economica)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        valores = (
+            empresa.nombre_empresa,
+            empresa.direccion,
+            empresa.departamento,
+            empresa.departamento,
+            empresa.email,
+            empresa.telefono,
+            empresa.pagina_web,
+            empresa.actividad_economica,
+        )
+        cursor.execute(query, valores)
+        conexion.commit()
+
+        return {"mensaje": "Empresa agregada correctamente"}
+
+    except Exception as e:
+        conexion.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al insertar empresa: {str(e)}")
+
+    finally:
+        cursor.close()
+        conexion.close()

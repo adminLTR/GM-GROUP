@@ -1,28 +1,4 @@
-import Select from 'react-select';
-import { ChevronDown } from 'lucide-react';
-
-function MultipleSelect({values, label, filtros, setFiltros}) {
-    const options = values.map(val => ({
-        value: val,
-        label: val
-    }));
-
-    return (
-        <div className="w-full p-2 rounded-md focus:ring-indigo-500 focus:border-indigo-500 appearance-none">
-            
-            <Select
-                options={options}
-                onChange={(selected) => {
-                    setFiltros({ ...filtros, [label.toLowerCase()]: selected.map(opt => opt.value).join('|') });
-                    console.log(filtros)
-                }}
-                placeholder={"Seleccionar " + label.toLowerCase() + "..."}
-                isSearchable
-                isMulti
-            />
-        </div>
-    );
-}
+import { MultipleSelect } from "./Selects";
 
 export default function Filtros({filtros, setFiltros, departamentos, actividades}) {
     return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">

@@ -14,3 +14,7 @@ export async function getEmpresasFiltro(params) {
     const response = await axios.get(API_URL + `/empresas/filtrar?${params}`);
     return response.data;
 }
+export async function agregarEmpresa(data) {
+    const response = await axios.post(API_URL + "/empresas/agregar", data);
+    return response.data;
+}

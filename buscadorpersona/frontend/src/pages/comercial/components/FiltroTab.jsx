@@ -1,8 +1,9 @@
 import Filtros from './Filtros';
 import Resultados from './Resultados';
 import Button from '../../../components/Button'
+import FormularioAgregarEmpresa from './FormularioAgregarEmpresa';
 
-import { getDepartamentos, getActividades, getEmpresasFiltro } from "../../../js/api";
+import { getDepartamentos, getActividades, getEmpresasFiltro, agregarEmpresa } from "../../../js/api";
 
 import { Search } from 'lucide-react';
 import { useState, useEffect } from "react";
@@ -25,6 +26,7 @@ export default function FiltroTab({
     const [actividades, setActividades] = useState([]);
     const [loading, setLoading] = useState(false);
     const [empresas, setEmpresas] = useState([]);
+    const [searched, setSearched] = useState(false);
 
     useEffect(() => {
         const fetchInitData = async () => {
@@ -59,6 +61,7 @@ export default function FiltroTab({
             // Llamada a la API de empresas
             const data = await getEmpresasFiltro(params);
             setEmpresas(data.empresas)
+            setSearched(true)
         } catch (error) {
             console.error('Error al buscar empresas:', error);
             alert('Ocurrió un error al buscar empresas. Por favor intente nuevamente.');
@@ -87,16 +90,27 @@ export default function FiltroTab({
             </Button>
         </div>
         
-        {/* Tabla de resultados */}
-        {empresas.length > 0 && (
+        {/* Tabla de resultados o mensaje */}
+        {
+        empresas.length > 0 && (
             <Resultados
-            empresas={empresas}
-            selectedEmpresas={selectedEmpresas}
-            toggleSelectAll={toggleSelectAll}
-            toggleSelectEmpresa={toggleSelectEmpresa}
-            handleEnviarEmail={handleEnviarEmails}
-            loading={loading}
+                empresas={empresas}
+                selectedEmpresas={selectedEmpresas}
+                toggleSelectAll={toggleSelectAll}
+                toggleSelectEmpresa={toggleSelectEmpresa}
+                handleEnviarEmail={handleEnviarEmails}
+                loading={loading}
             />
-        )}
+        )
+        }
+        <div className="my-4">
+            <FormularioAgregarEmpresa
+                departamentos={departamentos}
+                actividades={actividades}
+                onSubmit={(data) => {
+                    agregarEmpresa(data)
+                }}
+            />
+        </div>
     </div>
 }
