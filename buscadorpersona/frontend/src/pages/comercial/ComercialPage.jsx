@@ -7,7 +7,6 @@ import ModalKanban from './components/ModalKanban';
 // Main App Component
 const ComercialPage = () => {
   const [activeTab, setActiveTab] = useState('filter');
-  const [selectedEmpresas, setSelectedEmpresas] = useState([]);
   
   const [usuarios, setUsuarios] = useState([])
   const [selectedUser, setSelectedUser] = useState(sessionStorage.getItem("username"));
@@ -100,80 +99,6 @@ const ComercialPage = () => {
     fetchInitialData()
   }, [selectedUser]);
 
-  // Enviar emails y crear en kanban usando la API
-  const handleEnviarEmails = async () => {
-    if (selectedEmpresas.length === 0) {
-      alert('Debe seleccionar al menos una empresa');
-      return;
-    }
-
-    setLoading(true);
-    
-    try {
-      // Preparamos los datos para enviar a la API
-      const empresasIds = selectedEmpresas;
-      console.log(empresasIds)
-      const payload = {
-        departamento: filtros.departamento,
-        actividad_economica: filtros.actividad_economica,
-        empresas_ids: empresasIds,
-        responsable: localStorage.getItem('username'),
-        campana_id: 123 // Aquí podrías tener un campo para seleccionar la campaña
-      };
-      
-      // Llamada a la API para enviar emails y crear en kanban
-      const response = await fetch(API_URL + '/enviar-emails-kanban', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        
-        // Actualizamos el kanban con los nuevos datos
-        const resKanban = await fetch(API_URL + '/kanban/listar?username=' + selectedUser);
-        if (resKanban.ok) {
-          const updatedKanbanData = await resKanban.json();
-          setKanbanData(updatedKanbanData.tablero);
-        }
-        
-        setSelectedEmpresas([]);
-        setActiveTab('kanban');
-        
-        alert(result.mensaje || `Se enviaron ${selectedEmpresas.length} emails y se registraron en el kanban.`);
-      } else {
-        console.error('Error al enviar emails:', response.statusText);
-        alert('Ocurrió un error al enviar los emails. Por favor intente nuevamente.');
-      }
-    } catch (error) {
-      console.error('Error al enviar emails:', error);
-      alert('Ocurrió un error al enviar los emails. Por favor intente nuevamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Toggle selección de todas las empresas
-  const toggleSelectAll = () => {
-    if (selectedEmpresas.length === empresas.length) {
-      setSelectedEmpresas([]);
-    } else {
-      setSelectedEmpresas(empresas.map(e => e.id));
-    }
-  };
-
-  // Toggle selección de una empresa
-  const toggleSelectEmpresa = (id) => {
-    if (selectedEmpresas.includes(id)) {
-      setSelectedEmpresas(selectedEmpresas.filter(e => e !== id));
-    } else {
-      setSelectedEmpresas([...selectedEmpresas, id]);
-    }
-  };
-
   // Mover tarjeta entre columnas con actualización a la API
   const moveCard = async (empresa, targetColumn) => {
     try {
@@ -239,6 +164,61 @@ const ComercialPage = () => {
       }
     }
   };
+
+  const handleEnviarEmails = async (selectedEmpresas, setSelectedEmpresas, setLoading, filtros) => {
+      if (selectedEmpresas.length === 0) {
+          alert('Debe seleccionar al menos una empresa');
+          return;
+      }
+
+      setLoading(true);
+      
+      try {
+          // Preparamos los datos para enviar a la API
+          const empresasIds = selectedEmpresas;
+          const payload = {
+              departamento: filtros.departamentos,
+              actividad_economica: filtros.actividades,
+              empresas_ids: empresasIds,
+              responsable: sessionStorage.getItem('username'),
+              campana_id: 123 // Aquí podrías tener un campo para seleccionar la campaña
+          };
+          console.log(payload)
+          
+          // Llamada a la API para enviar emails y crear en kanban
+          const response = await fetch(API_URL + '/kanban/enviar-emails', {
+              method: 'POST',
+              headers: {
+              'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(payload)
+          });
+          
+          if (response.ok) {
+              const result = await response.json();
+              
+              // Actualizamos el kanban con los nuevos datos
+              const resKanban = await fetch(API_URL + '/kanban/listar?username=' + selectedUser);
+              if (resKanban.ok) {
+              const updatedKanbanData = await resKanban.json();
+              setKanbanData(updatedKanbanData.tablero);
+              }
+              
+              setSelectedEmpresas([]);
+              setActiveTab('kanban');
+              
+              alert(result.mensaje || `Se enviaron ${selectedEmpresas.length} emails y se registraron en el kanban.`);
+          } else {
+              console.error('Error al enviar emails:', response.statusText);
+              alert('Ocurrió un error al enviar los emails. Por favor intente nuevamente.');
+          }
+      } catch (error) {
+          console.error('Error al enviar emails:', error);
+          alert('Ocurrió un error al enviar los emails. Por favor intente nuevamente.');
+      } finally {
+          setLoading(false);
+      }
+    };
 
   // Abrir modal con detalles de empresa
   const openEmpresaModal = (empresa) => {
@@ -364,11 +344,7 @@ const ComercialPage = () => {
       <main className="container mx-auto px-4 py-6">
         {activeTab === 'filter' ? (
           <FiltroTab
-            selectedEmpresas={selectedEmpresas}
-            toggleSelectAll={toggleSelectAll}
-            toggleSelectEmpresa={toggleSelectEmpresa}
-            handleEnviarEmail={handleEnviarEmails}
-          />
+          handleEnviarEmails={handleEnviarEmails}/>
         ) : (
           <KanbanTab 
             kanbanData = {kanbanData} 

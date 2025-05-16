@@ -190,7 +190,7 @@ async def buscar(request: Request):
 
 
     
-app.include_router(email_router)
+app.include_router(email_router, prefix="/kanban")
 app.include_router(listar_router)
 app.include_router(mover_router)
 app.include_router(empresas_router, prefix="/empresas")

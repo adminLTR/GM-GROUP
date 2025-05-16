@@ -86,7 +86,7 @@ def registrar_en_kanban(empresas, responsable):
     conn.close()
 
 # Endpoint para filtrar empresas, enviar email y agregarlas al kanban
-@router.post("/enviar-emails-kanban")
+@router.post("/enviar-emails")
 def enviar_emails_y_registrar(filtro: FiltroEnvio):
     conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
     cursor = conn.cursor(dictionary=True)

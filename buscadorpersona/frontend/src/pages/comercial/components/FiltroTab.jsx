@@ -9,9 +9,6 @@ import { Search } from 'lucide-react';
 import { useState, useEffect } from "react";
 
 export default function FiltroTab({
-    selectedEmpresas, 
-    toggleSelectAll, 
-    toggleSelectEmpresa, 
     handleEnviarEmails,
 }) {
 
@@ -26,7 +23,7 @@ export default function FiltroTab({
     const [actividades, setActividades] = useState([]);
     const [loading, setLoading] = useState(false);
     const [empresas, setEmpresas] = useState([]);
-    const [searched, setSearched] = useState(false);
+    
 
     useEffect(() => {
         const fetchInitData = async () => {
@@ -61,7 +58,6 @@ export default function FiltroTab({
             // Llamada a la API de empresas
             const data = await getEmpresasFiltro(params);
             setEmpresas(data.empresas)
-            setSearched(true)
         } catch (error) {
             console.error('Error al buscar empresas:', error);
             alert('Ocurrió un error al buscar empresas. Por favor intente nuevamente.');
@@ -69,7 +65,7 @@ export default function FiltroTab({
             setLoading(false);
         }
     };
-
+    
     return <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold mb-6">Filtrar Empresas</h2>
         
@@ -95,11 +91,10 @@ export default function FiltroTab({
         empresas.length > 0 && (
             <Resultados
                 empresas={empresas}
-                selectedEmpresas={selectedEmpresas}
-                toggleSelectAll={toggleSelectAll}
-                toggleSelectEmpresa={toggleSelectEmpresa}
-                handleEnviarEmail={handleEnviarEmails}
                 loading={loading}
+                setLoading={setLoading}
+                handleEnviarEmails={handleEnviarEmails}
+                filtros={filtros}
             />
         )
         }

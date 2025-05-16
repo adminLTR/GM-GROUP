@@ -1,13 +1,34 @@
 import { Mail, CheckSquare, Square } from 'lucide-react';
+import { useState } from "react";
 
 export default function Resultados({
-    empresas, 
-    selectedEmpresas, 
-    toggleSelectAll, 
-    toggleSelectEmpresa, 
+    empresas,
+    loading,
+    setLoading,
     handleEnviarEmails,
-    loading
+    filtros
 }) {
+
+    const [selectedEmpresas, setSelectedEmpresas] = useState([]);
+
+    const toggleSelectAll = () => {
+        if (selectedEmpresas.length === empresas.length) {
+            setSelectedEmpresas([]);
+        } else {
+            setSelectedEmpresas(empresas.map(e => e.id));
+        }
+    };
+
+    const toggleSelectEmpresa = (id) => {
+        if (selectedEmpresas.includes(id)) {
+            setSelectedEmpresas(selectedEmpresas.filter(e => e !== id));
+        } else {
+            setSelectedEmpresas([...selectedEmpresas, id]);
+        }
+    };
+
+    
+    
     return <div className="mt-6">
         <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">Resultados ({empresas.length})</h3>
@@ -94,7 +115,7 @@ export default function Resultados({
         <div className="mt-6 flex justify-center">
             <button 
                 className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-500 flex items-center gap-2 disabled:opacity-50"
-                onClick={handleEnviarEmails}
+                onClick={()=>handleEnviarEmails(selectedEmpresas, setSelectedEmpresas, setLoading, filtros)}
                 disabled={selectedEmpresas.length === 0 || loading}
                 >
                 <Mail size={20} />
