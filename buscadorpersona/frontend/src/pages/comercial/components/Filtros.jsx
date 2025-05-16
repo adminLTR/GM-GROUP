@@ -1,39 +1,51 @@
+import Select from 'react-select';
 import { ChevronDown } from 'lucide-react';
+
+function MultipleSelect({values, label, filtros, setFiltros}) {
+    const options = values.map(val => ({
+        value: val,
+        label: val
+    }));
+
+    return (
+        <div className="w-full p-2 rounded-md focus:ring-indigo-500 focus:border-indigo-500 appearance-none">
+            
+            <Select
+                options={options}
+                onChange={(selected) => {
+                    setFiltros({ ...filtros, [label.toLowerCase()]: selected.map(opt => opt.value).join('|') });
+                    console.log(filtros)
+                }}
+                placeholder={"Seleccionar " + label.toLowerCase() + "..."}
+                isSearchable
+                isMulti
+            />
+        </div>
+    );
+}
 
 export default function Filtros({filtros, setFiltros, departamentos, actividades}) {
     return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
             <div className="relative">
-                <select 
-                className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
-                value={filtros.departamento}
-                onChange={(e) => {setFiltros({...filtros, departamento: e.target.value})}}
-                >
-                <option value="">Seleccione un departamento</option>
-                {departamentos.map(dep => (
-                    <option key={dep.id_departamento} value={dep.nombre_departamento}>
-                    {dep.nombre_departamento}
-                    </option>
-                ))}
-                </select>
-                <ChevronDown className="absolute right-2 top-2.5 text-gray-500 pointer-events-none" size={20} />
+                <MultipleSelect 
+                    values={departamentos.map(d => d.nombre_departamento)}
+                    label={"departamentos"}
+                    filtros={filtros}
+                    setFiltros={setFiltros}
+                />
             </div>
-            </div>
-            <div>
+        </div>
+        <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Actividad Económica</label>
             <div className="relative">
-                <select 
-                className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
-                value={filtros.actividad_economica}
-                onChange={(e) => setFiltros({...filtros, actividad_economica: e.target.value})}
-                >
-                <option value="">Seleccione una actividad</option>
-                {actividades.map(act => (
-                    <option key={act.id} value={act.nombre}>{act.nombre}</option>
-                ))}
-                </select>
-                <ChevronDown className="absolute right-2 top-2.5 text-gray-500 pointer-events-none" size={20} />
+                <MultipleSelect
+                    values={actividades.map(a=>a.nombre)}
+                    label={"actividades"}
+                    filtros={filtros}
+                    setFiltros={setFiltros}
+                />
             </div>
             </div>
             <div>

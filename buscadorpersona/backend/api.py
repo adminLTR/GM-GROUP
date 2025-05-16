@@ -1,7 +1,4 @@
 from fastapi import FastAPI, Request, HTTPException, Depends
-from fastapi import Query
-from fastapi.responses import JSONResponse
-from typing import Optional
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 from fuentes.buscar_coincidencias import buscar_coincidencias
@@ -19,6 +16,7 @@ from mysql.connector import Error
 from kamban.routes.enviar_emails_kanban import router as email_router
 from kamban.routes.listar import router as listar_router
 from kamban.routes.mover import router as mover_router
+from empresas.router import router as empresas_router
 from pydantic import BaseModel
 import bcrypt
 
@@ -189,71 +187,10 @@ async def buscar(request: Request):
         "google": resultados_google[:10]
     }
 
-@app.get("/departamentos")
-async def get_departamentos():
-    conn = obtener_conexion(os.getenv("DB_SISTEMA_NAME"))
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT id_departamento, nombre_departamento FROM departamentos")
-    departamentos = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return {"departamentos": departamentos}
 
-@app.get("/actividades")
-async def get_departamentos():
-    conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT id, nombre FROM actividad_economica")
-    actividades = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return {"actividades": actividades}
 
-@app.get("/empresas/filtrar")
-def filtrar_empresas(
-    departamento: Optional[str] = Query(None),
-    actividad_economica: Optional[str] = Query(None),
-    nombre_empresa: Optional[str] = Query(None),
-    fecha_desde: Optional[str] = Query(None),
-    fecha_hasta: Optional[str] = Query(None)
-):
-    try:
-        conexion = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
-        cursor = conexion.cursor(dictionary=True)
-
-        query = "SELECT * FROM bdempresasuruguay WHERE 1=1"
-        valores = []
-
-        if departamento:
-            query += " AND departamento = %s"
-            valores.append(departamento)
-        
-        if actividad_economica:
-            query += " AND actividad_economica = %s"
-            valores.append(actividad_economica)
-
-        if nombre_empresa:
-            query += " AND nombre_empresa LIKE %s"
-            valores.append(f"%{nombre_empresa}%")
-
-        if fecha_desde:
-            query += " AND fecha_creacion >= %s"
-            valores.append(fecha_desde)
-
-        if fecha_hasta:
-            query += " AND fecha_creacion <= %s"
-            valores.append(fecha_hasta)
-
-        cursor.execute(query, valores)
-        empresas = cursor.fetchall()
-        cursor.close()
-        conexion.close()
-
-        return JSONResponse(content={"empresas": empresas})
-    
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
     
 app.include_router(email_router)
 app.include_router(listar_router)
 app.include_router(mover_router)
+app.include_router(empresas_router, prefix="/empresas")

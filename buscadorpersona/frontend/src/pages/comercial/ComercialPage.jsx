@@ -1,27 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Mail, ChevronDown, User, Phone, MapPin, MessageSquare, Edit } from 'lucide-react';
-import UserSelect from "./components/UserSelect"
 import Header from './components/Header';
 import FiltroTab from './components/FiltroTab';
-import Button from '../../components/Button';
+import KanbanTab from './components/KanbanTab';
+import ModalKanban from './components/ModalKanban';
 
 // Main App Component
 const ComercialPage = () => {
   const [activeTab, setActiveTab] = useState('filter');
   const [selectedEmpresas, setSelectedEmpresas] = useState([]);
-  const [empresas, setEmpresas] = useState([]);
+  
   const [usuarios, setUsuarios] = useState([])
   const [selectedUser, setSelectedUser] = useState(sessionStorage.getItem("username"));
   const [disabledSelect, setDisabledSelect] = useState(true);
-  const [departamentos, setDepartamentos] = useState([]);
-  const [actividades, setActividades] = useState([]);
-  const [filtros, setFiltros] = useState({
-    departamento: '',
-    actividad_economica: '',
-    fecha_desde: '',
-    fecha_hasta: '',
-    nombre_empresa: ''
-  });
+  
   const [kanbanData, setKanbanData] = useState({});
   const [columnTitles, setColumnTitles] = useState({
     email_enviado: 'Email Enviado',
@@ -33,7 +24,6 @@ const ComercialPage = () => {
     contrato_los_servicios: 'Contrato de Servicios',
     finalizado: 'Finalizado'
   });
-  const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEmpresa, setSelectedEmpresa] = useState(null);
 
@@ -43,24 +33,6 @@ const ComercialPage = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // Get departamentos from API
-        const resDepartamentos = await fetch(API_URL + '/departamentos');
-        if (resDepartamentos.ok) {
-          const departamentosData = await resDepartamentos.json();
-          setDepartamentos(departamentosData.departamentos);
-        } else {
-          console.error('Error fetching departamentos');
-        }
-        
-        // Get actividades from API
-        const resActividades = await fetch(API_URL + '/actividades');
-        if (resActividades.ok) {
-          const actividadesData = await resActividades.json();
-          setActividades(actividadesData.actividades);
-        } else {
-          console.error('Error fetching actividades');
-        }
-        
         const resUsuarios = await fetch(API_URL + '/get_users');
         if (resUsuarios.ok) {
           const usuariosData = await resUsuarios.json();
@@ -127,43 +99,6 @@ const ComercialPage = () => {
     };
     fetchInitialData()
   }, [selectedUser]);
-
-  // Buscar empresas desde la API
-  const handleBuscarEmpresas = async () => {
-    if (!filtros.departamento && !filtros.actividad_economica && !filtros.nombre_empresa && !filtros.fecha_desde && !filtros.fecha_hasta) {
-      alert('Por favor ingrese al menos un criterio de búsqueda');
-      return;
-    }
-    
-    setLoading(true);
-    
-    try {
-      // Construimos los parámetros de búsqueda
-      const params = new URLSearchParams();
-      
-      if (filtros.departamento) params.append('departamento', filtros.departamento);
-      if (filtros.actividad_economica) params.append('actividad_economica', filtros.actividad_economica);
-      if (filtros.nombre_empresa) params.append('nombre_empresa', filtros.nombre_empresa);
-      if (filtros.fecha_desde) params.append('fecha_desde', filtros.fecha_desde);
-      if (filtros.fecha_hasta) params.append('fecha_hasta', filtros.fecha_hasta);
-      
-      // Llamada a la API de empresas
-      const response = await fetch(API_URL + `/empresas/filtrar?${params}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setEmpresas(data.empresas);
-      } else {
-        console.error('Error al buscar empresas:', response.statusText);
-        alert('Ocurrió un error al buscar empresas. Por favor intente nuevamente.');
-      }
-    } catch (error) {
-      console.error('Error al buscar empresas:', error);
-      alert('Ocurrió un error al buscar empresas. Por favor intente nuevamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Enviar emails y crear en kanban usando la API
   const handleEnviarEmails = async () => {
@@ -429,239 +364,34 @@ const ComercialPage = () => {
       <main className="container mx-auto px-4 py-6">
         {activeTab === 'filter' ? (
           <FiltroTab
-            filtros={filtros}
-            setFiltros={setFiltros}
-            departamentos={departamentos}
-            actividades={actividades}
-            empresas={empresas}
-            handleBuscarEmpresas={handleBuscarEmpresas}
             selectedEmpresas={selectedEmpresas}
             toggleSelectAll={toggleSelectAll}
             toggleSelectEmpresa={toggleSelectEmpresa}
             handleEnviarEmail={handleEnviarEmails}
-            loading={loading}
           />
         ) : (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-6">Tablero Kanban</h2>
-              <UserSelect
-                users={usuarios}
-                value={selectedUser}
-                onChange={setSelectedUser}
-                isDisabled={disabledSelect}
-              />
-            {/* Kanban Board */}
-            <div className="flex gap-4 overflow-x-auto pb-4 min-h-screen">
-              {Object.keys(columnTitles).map((column) => {
-                
-                return (
-                  <div key={column} className="flex-shrink-0 w-72 bg-gray-100 rounded-md p-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="font-medium">{columnTitles[column]}</h3>
-                      <span className="text-sm bg-gray-200 px-2 py-1 rounded-full">
-                        {kanbanData[column]?kanbanData[column].length:0}
-                      </span>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      {kanbanData[column] && kanbanData[column].map((empresa) => (
-                        <div 
-                          key={empresa.kanban_id} 
-                          className="bg-white p-3 rounded-md shadow cursor-pointer hover:shadow-md"
-                          onClick={() => openEmpresaModal(empresa)}
-                        >
-                          <h4 className="font-medium text-gray-900 mb-2">{empresa.nombre_empresa}</h4>
-                          
-                          <div className="space-y-1 text-sm text-gray-600">
-                            <div className="flex items-center gap-1">
-                              <Mail size={14} />
-                              <span>{empresa.email}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Phone size={14} />
-                              <span>{empresa.telefono}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <MapPin size={14} />
-                              <span>{empresa.localidad}, {empresa.departamento}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <User size={14} />
-                              <span>Resp: {empresa.usuario_responsable}</span>
-                            </div>
-                          </div>
-                          
-                          {empresa.comentario && empresa.comentario.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-gray-100 text-sm">
-                              <div className="flex items-start gap-1">
-                                <MessageSquare size={14} className="mt-1 flex-shrink-0" />
-                                <span>{empresa.comentarios[empresa.comentarios.length - 1].texto}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <KanbanTab 
+            kanbanData = {kanbanData} 
+            columnTitles = {columnTitles} 
+            usuarios = {usuarios} 
+            selectedUser = {selectedUser} 
+            setSelectedUser = {setSelectedUser} 
+            disabledSelect = {disabledSelect} 
+            openEmpresaModal = {openEmpresaModal}
+          />
         )}
       </main>
 
       {/* Modal de Empresa */}
       {modalVisible && selectedEmpresa && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-screen overflow-y-auto">
-            <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-xl font-semibold">{selectedEmpresa.nombre_empresa}</h3>
-              <button 
-                className="text-gray-400 hover:text-gray-600"
-                onClick={() => setModalVisible(false)}
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="p-6">
-              {/* Detalles de la empresa */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                  <div className="space-y-4">
-                    <div>
-                      <span className="text-sm text-gray-500">Email:</span>
-                      <p className="font-medium">{selectedEmpresa.email}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-gray-500">Teléfono:</span>
-                      <p className="font-medium">{selectedEmpresa.telefono}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-gray-500">Ubicación:</span>
-                      <p className="font-medium">{selectedEmpresa.localidad}, {selectedEmpresa.departamento}</p>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <div className="space-y-4">
-                    <div>
-                      <span className="text-sm text-gray-500">Actividad Económica:</span>
-                      <p className="font-medium">{selectedEmpresa.actividad_economica}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-gray-500">Responsable:</span>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{selectedEmpresa.responsable}</p>
-                        <button 
-                          className="text-indigo-600 hover:text-indigo-800"
-                          onClick={() => {
-                            const newResponsable = prompt('Ingrese el nombre del nuevo responsable:', selectedEmpresa.responsable);
-                            if (newResponsable) updateResponsable(newResponsable);
-                          }}
-                        >
-                          <Edit size={16} />
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-sm text-gray-500">Fecha de creación:</span>
-                      <p className="font-medium">{selectedEmpresa.fecha_creacion}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Estado actual y cambio de estado */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Estado actual:</label>
-                <div className="relative">
-                  <select 
-                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
-                    value={selectedEmpresa.estado}
-                    onChange={(e) => {
-                      const targetColumn = e.target.value;
-                      const currentColumn = selectedEmpresa.estado;
-                      
-                      if (currentColumn && currentColumn !== targetColumn) {
-                        // const empresaToMove = kanbanData[currentColumn].find(e => e.id === selectedEmpresa.id);
-                        // console.log(empresaToMove)
-                        // console.log(selectedEmpresa)
-                        moveCard(selectedEmpresa, targetColumn);
-                      }
-                      
-                      setModalVisible(false);
-                    }}
-                  >
-                    {Object.keys(columnTitles).map((column) => {
-                      return (
-                        <option key={column} value={column}>
-                          {columnTitles[column]}
-                        </option>
-                      );
-                    })}
-                  </select>
-                  <ChevronDown className="absolute right-2 top-2.5 text-gray-500 pointer-events-none" size={20} />
-                </div>
-              </div>
-              
-              {/* Comentarios */}
-              <div className="mb-6">
-                <h4 className="font-medium mb-3">Historial de comentarios</h4>
-                
-                <div className="space-y-4 mb-4 max-h-60 overflow-y-auto bg-gray-50 p-4 rounded-md">
-                  {selectedEmpresa.comentarios && selectedEmpresa.comentarios.length > 0 ? (
-                    selectedEmpresa.comentarios.map((comentario, index) => (
-                      <div key={index} className="pb-3 border-b border-gray-200 last:border-0">
-                        <div className="text-sm">{comentario.texto}</div>
-                        <div className="text-xs text-gray-500 mt-1 flex items-center justify-between">
-                          <span>{comentario.usuario}</span>
-                          <span>{comentario.fecha}</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-gray-500 text-sm">No hay comentarios para mostrar.</div>
-                  )}
-                </div>
-                
-                {/* Agregar comentario */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Agregar comentario:</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      className="flex-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="Escribe un comentario..."
-                      id="new-comment"
-                    />
-                    <button 
-                      className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-500"
-                      onClick={() => {
-                        const commentInput = document.getElementById('new-comment');
-                        if (commentInput && commentInput.value) {
-                          addComentario(commentInput.value);
-                          commentInput.value = '';
-                        }
-                      }}
-                    >
-                      Agregar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-2 p-6 border-t bg-gray-50">
-              <button 
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-100"
-                onClick={() => setModalVisible(false)}
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
+        <ModalKanban
+          setModalVisible = {setModalVisible}
+          selectedEmpresa = {selectedEmpresa}
+          updateResponsable = {updateResponsable}
+          moveCard = {moveCard}
+          columnTitles = {columnTitles}
+          addComentario = {addComentario}
+        />
       )}
     </div>
   );
