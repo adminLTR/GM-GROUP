@@ -6,7 +6,7 @@ router = APIRouter()
 
 # Modelo del cuerpo que recibe la API
 class MovimientoKanban(BaseModel):
-    empresa_id: int
+    kanban_id: int
     nuevo_estado: str
     usuario: str = ""
     comentario: str = ""
@@ -28,11 +28,11 @@ def mover_tarjeta_kanban(mov: MovimientoKanban):
     if mov.nuevo_estado not in ESTADOS_VALIDOS:
         raise HTTPException(status_code=400, detail="Estado no válido.")
 
-    conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NA,E"))
+    conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
     cursor = conn.cursor()
 
     # Verificamos que la empresa esté ya en el tablero
-    cursor.execute("SELECT id FROM kanban_estado_empresa WHERE empresa_id = %s", (mov.empresa_id,))
+    cursor.execute("SELECT id FROM kanban_estado_empresa WHERE id = %s", (mov.kanban_id,))
     existente = cursor.fetchone()
 
     if existente:
@@ -40,16 +40,15 @@ def mover_tarjeta_kanban(mov: MovimientoKanban):
         cursor.execute("""
             UPDATE kanban_estado_empresa
             SET estado = %s,
-                usuario_responsable = %s,
                 comentario = %s
-            WHERE empresa_id = %s
-        """, (mov.nuevo_estado, mov.usuario, mov.comentario, mov.empresa_id))
+            WHERE id = %s
+        """, (mov.nuevo_estado, mov.comentario, mov.kanban_id))
     else:
         # Insertamos una nueva entrada si no existe
         cursor.execute("""
             INSERT INTO kanban_estado_empresa (empresa_id, estado, usuario_responsable, comentario)
             VALUES (%s, %s, %s, %s)
-        """, (mov.empresa_id, mov.nuevo_estado, mov.usuario, mov.comentario))
+        """, (mov.kanban_id, mov.nuevo_estado, mov.usuario, mov.comentario))
 
     conn.commit()
     cursor.close()

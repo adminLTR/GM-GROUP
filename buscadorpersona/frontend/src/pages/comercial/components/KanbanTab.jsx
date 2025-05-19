@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { Mail, User, Phone, MapPin, MessageSquare } from 'lucide-react';
-
+import { getUsers } from "../../../js/api";
 import UserSelect from "./UserSelect";
 
 function KanbanItem({openEmpresaModal, empresa}) {
@@ -42,13 +43,38 @@ function KanbanItem({openEmpresaModal, empresa}) {
 
 export default function KanbanTab({
     kanbanData, 
-    columnTitles, 
-    usuarios, 
+    setKanbanData,
+    columnTitles,
     selectedUser, 
     setSelectedUser, 
     disabledSelect, 
     openEmpresaModal
 }) {
+
+  const [usuarios, setUsuarios] = useState([])
+
+
+    useEffect(() => {
+        const fetchInitData = async () => {
+            const dataUsers = await getUsers();
+            if (dataUsers.users) {
+                setUsuarios(dataUsers.users);
+            } else {
+                setKanbanData({
+                    email_enviado: [],
+                    primer_llamado: [],
+                    reunion: [],
+                    envio_propuesta: [],
+                    seguimiento: [],
+                    envio_contrato: [],
+                    contrato_los_servicios: [],
+                    finalizado: []
+                });
+            }            
+        }
+        fetchInitData();
+    }, []);
+
     return <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold mb-6">Tablero Kanban</h2>
             <UserSelect

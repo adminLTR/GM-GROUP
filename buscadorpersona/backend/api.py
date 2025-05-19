@@ -13,12 +13,11 @@ from dotenv import load_dotenv
 import os
 import mysql.connector
 from mysql.connector import Error
-from kamban.routes.enviar_emails_kanban import router as email_router
-from kamban.routes.listar import router as listar_router
 from kamban.routes.mover import router as mover_router
 from empresas.router import router as empresas_router
+from kamban.router import router as kanban_router
+from users.router import router as users_router
 from pydantic import BaseModel
-import bcrypt
 
 # Cargar las variables del archivo .env
 load_dotenv()
@@ -32,78 +31,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-class LoginInput(BaseModel):
-    username: str
-    password: str
-
-def obtener_usuario_por_username(username: str):
-    try:
-        conn = obtener_conexion(os.getenv("DB_SISTEMA_NAME"))
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM usuarios WHERE username = %s", (username,))
-        user = cursor.fetchone()
-        cursor.close()
-        conn.close()
-        return user
-    except Error as e:
-        print("Error al conectar a MySQL:", e)
-        return None
-
-@app.post("/login")
-def login(login_input: LoginInput):
-    usuario = obtener_usuario_por_username(login_input.username)
-    if not usuario or not verificar_password(login_input.password, usuario["password"]):
-        raise HTTPException(status_code=401, detail="Credenciales inválidas")
-
-    token = crear_token_acceso({"sub": usuario["username"]})
-    return {"access_token": token, "token_type": "bearer", "superuser":usuario["es_superuser"]}
-
-class Usuario(BaseModel):
-    username: str
-    password: str
-    nombres: str
-    email: str
-    telefono: str
-    superuser: bool
-@app.post("/usuarios/crear")
-def crear_usuario(usuario: Usuario):
-    try:
-        conn = obtener_conexion(os.getenv("DB_SISTEMA_NAME"))
-        cursor = conn.cursor()
-        hashed_password = bcrypt.hashpw(usuario.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        print(hashed_password)
-        
-        cursor.execute("""
-            INSERT INTO usuarios (username, password, nombre_completo, email, telefono, es_superuser, estado)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (
-            usuario.username,
-            hashed_password,
-            usuario.nombres,
-            usuario.email,
-            usuario.telefono,
-            usuario.superuser,
-            'activo'
-        ))
-
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        return {"status": "ok", "message": "Usuario creado correctamente"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/get_users")
-def get_users():
-    conn = obtener_conexion(os.getenv("DB_SISTEMA_NAME"))
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT id_usuario, username FROM usuarios")
-    users = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return {'users': users}
 
 @app.post("/buscar")
 async def buscar(request: Request):
@@ -190,7 +117,7 @@ async def buscar(request: Request):
 
 
     
-app.include_router(email_router, prefix="/kanban")
-app.include_router(listar_router)
-app.include_router(mover_router)
+app.include_router(kanban_router, prefix="/kanban")
+app.include_router(users_router, prefix="/users")
 app.include_router(empresas_router, prefix="/empresas")
+app.include_router(mover_router)

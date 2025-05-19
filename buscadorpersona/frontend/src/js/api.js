@@ -26,3 +26,9 @@ export async function listarKanban(username) {
     const response = await axios.get(API_URL + `/kanban/listar?username=${username}`);
     return response.data;
 }
+
+
+export async function getUsers() {
+    const response = await axios.get(API_URL + `/users/all`);
+    return response.data;
+}

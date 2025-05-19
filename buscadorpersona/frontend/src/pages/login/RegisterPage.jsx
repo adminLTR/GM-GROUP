@@ -24,7 +24,7 @@ export default function RegisterPage() {
     const handleSubmit = async (e) => {
       e.preventDefault();
   
-      const response = await fetch(API_URL + '/usuarios/crear', {
+      const response = await fetch(API_URL + '/users/crear', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',

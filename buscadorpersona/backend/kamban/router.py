@@ -1,25 +1,11 @@
-## FILTRADO Y ENVIAR EMAIL ## COMERCIAL 
-
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import Optional
-from datetime import date
+from fastapi import APIRouter, HTTPException, Query
+from .models import *
 import mysql.connector
 import requests
 from db.conexion_mysql import obtener_conexion
 import os
 
 router = APIRouter()
-
-# Modelo para los datos que llegan del frontend
-class FiltroEnvio(BaseModel):
-    departamento: str
-    actividad_economica: str
-    campana_id: int
-    empresas_ids: list
-    fecha_desde: Optional[date] = None
-    fecha_hasta: Optional[date] = None
-    responsable: str
 
 # Función para obtener token de autenticación en Teleprom
 def obtener_token_teleprom():
@@ -85,7 +71,6 @@ def registrar_en_kanban(empresas, responsable):
     cursor.close()
     conn.close()
 
-# Endpoint para filtrar empresas, enviar email y agregarlas al kanban
 @router.post("/enviar-emails")
 def enviar_emails_y_registrar(filtro: FiltroEnvio):
     conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
@@ -136,4 +121,60 @@ def enviar_emails_y_registrar(filtro: FiltroEnvio):
         "status": "ok",
         "mensaje": f"Se enviaron {cantidad_enviados} emails y se registraron en el kanban.",
         "empresas": [e["nombre_empresa"] for e in empresas if e.get("email")]
+    }
+
+@router.get("/listar")
+def listar_tablero_kanban(username: str = Query(..., description="Nombre de usuario")):
+    conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT * FROM sistema_seguros.usuarios WHERE username = %s
+    """, (username,))
+    
+    user = cursor.fetchone()
+    if not user:
+        cursor.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    query = """
+        SELECT
+            k.id AS kanban_id,
+            k.empresa_id,
+            k.estado,
+            k.usuario_responsable,
+            k.comentario,
+            e.nombre_empresa,
+            e.email,
+            e.telefono,
+            e.direccion,
+            e.departamento,
+            e.localidad,
+            e.actividad_economica
+        FROM kanban_estado_empresa k
+        INNER JOIN bdempresasuruguay e ON k.empresa_id = e.id
+    """
+
+    if not user["es_superuser"]:
+        query += f" WHERE k.usuario_responsable = '{user['username']}'"
+    # Obtenemos todas las entradas del tablero con datos de empresa
+    cursor.execute(query)
+
+    filas = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    # Agrupamos por estado
+    tablero = {}
+    for fila in filas:
+        estado = fila["estado"]
+        if estado not in tablero:
+            tablero[estado] = []
+        tablero[estado].append(fila)
+
+    return {
+        "status": "ok",
+        "tablero": tablero,
+        "es_superuser": user["es_superuser"]
     }

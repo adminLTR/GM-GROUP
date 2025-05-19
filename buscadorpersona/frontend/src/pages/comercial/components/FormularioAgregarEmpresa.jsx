@@ -21,6 +21,15 @@ export default function FormularioAgregarEmpresa({ departamentos, actividades, o
         e.preventDefault();
         console.log(formData)
         onSubmit(formData); // Puedes manejar esto en el componente padre
+        setFormData({
+            nombre_empresa: '',
+            departamento: '',
+            direccion: '',
+            actividad_economica: '',
+            email: '',
+            telefono: '',
+            pagina_web: ''
+        })
     };
 
     return (

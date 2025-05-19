@@ -8,12 +8,11 @@ import ModalKanban from './components/ModalKanban';
 const ComercialPage = () => {
   const [activeTab, setActiveTab] = useState('filter');
   
-  const [usuarios, setUsuarios] = useState([])
   const [selectedUser, setSelectedUser] = useState(sessionStorage.getItem("username"));
   const [disabledSelect, setDisabledSelect] = useState(true);
   
   const [kanbanData, setKanbanData] = useState({});
-  const [columnTitles, setColumnTitles] = useState({
+  const columnTitles = {
     email_enviado: 'Email Enviado',
     primer_llamado: 'Primer Llamado',
     reunion: 'Reunión',
@@ -22,42 +21,11 @@ const ComercialPage = () => {
     envio_contrato: 'Envío Contrato',
     contrato_los_servicios: 'Contrato de Servicios',
     finalizado: 'Finalizado'
-  });
+  };
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEmpresa, setSelectedEmpresa] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
-
-  // Fetch initial data from API
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const resUsuarios = await fetch(API_URL + '/get_users');
-        if (resUsuarios.ok) {
-          const usuariosData = await resUsuarios.json();
-          setUsuarios(usuariosData.users);
-        } else {
-          console.error('Error fetching usuarios');
-        }
-        
-      } catch (error) {
-        console.error('Error fetching initial data:', error);
-        // Initialize with empty data if APIs fail
-        setKanbanData({
-          email_enviado: [],
-          primer_llamado: [],
-          reunion: [],
-          envio_propuesta: [],
-          seguimiento: [],
-          envio_contrato: [],
-          contrato_los_servicios: [],
-          finalizado: []
-        });
-      }
-    };
-    
-    fetchInitialData();
-  }, []);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -111,12 +79,8 @@ const ComercialPage = () => {
       const updatedKanban = {...kanbanData};
       
       // Remove from current column
-      console.log(kanbanData)
-      console.log({...kanbanData})
-      console.log(updatedKanban)
-      
       Object.keys(updatedKanban).forEach(column => {
-        updatedKanban[column] = updatedKanban[column].filter(e => e.id !== empresa.id);
+        updatedKanban[column] = updatedKanban[column].filter(e => e.kanban_id !== empresa.kanban_id);
       });
       // Add to target column
       if (updatedKanban[targetColumn]) {
@@ -133,7 +97,7 @@ const ComercialPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          empresa_id: empresa.empresa_id,
+          kanban_id: empresa.kanban_id,
           // estado_anterior: currentColumn,
           usuario: selectedUser,
           nuevo_estado: targetColumn
@@ -295,8 +259,8 @@ const ComercialPage = () => {
         ) : (
           <KanbanTab 
             kanbanData = {kanbanData} 
+            setKanbanData={setKanbanData}
             columnTitles = {columnTitles} 
-            usuarios = {usuarios} 
             selectedUser = {selectedUser} 
             setSelectedUser = {setSelectedUser} 
             disabledSelect = {disabledSelect} 
