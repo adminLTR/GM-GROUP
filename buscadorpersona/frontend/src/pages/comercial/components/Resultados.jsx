@@ -1,12 +1,14 @@
 import { Mail, CheckSquare, Square } from 'lucide-react';
 import { useState } from "react";
+import { enviarEmailKanban, listarKanban } from '../../../js/api';
 
 export default function Resultados({
     empresas,
     loading,
     setLoading,
-    handleEnviarEmails,
-    filtros
+    filtros,
+    setActiveTab,
+    setKanbanData
 }) {
 
     const [selectedEmpresas, setSelectedEmpresas] = useState([]);
@@ -27,7 +29,50 @@ export default function Resultados({
         }
     };
 
-    
+    const handleEnviarEmails = async () => {
+      if (selectedEmpresas.length === 0) {
+          alert('Debe seleccionar al menos una empresa');
+          return;
+      }
+
+      setLoading(true);
+      
+      try {
+          // Preparamos los datos para enviar a la API
+          const empresasIds = selectedEmpresas;
+          const payload = {
+              departamento: filtros.departamentos,
+              actividad_economica: filtros.actividades,
+              empresas_ids: empresasIds,
+              responsable: sessionStorage.getItem('username'),
+              campana_id: 123 // Aquí podrías tener un campo para seleccionar la campaña
+          };
+          
+          // Llamada a la API para enviar emails y crear en kanban
+          const response = await enviarEmailKanban(payload)
+          
+          if (response.status === "ok") {
+              // Actualizamos el kanban con los nuevos datos
+              const resKanban = await listarKanban(sessionStorage.getItem("username"));
+              if (resKanban.status === "ok") {
+                setKanbanData(resKanban.tablero);
+              }
+              
+              setSelectedEmpresas([]);
+              setActiveTab('kanban');
+              
+              alert(response.mensaje);
+          } else {
+              console.error('Error al enviar emails:', response.statusText);
+              alert('Ocurrió un error al enviar los emails. Por favor intente nuevamente.');
+          }
+      } catch (error) {
+          console.error('Error al enviar emails:', error);
+          alert('Ocurrió un error al enviar los emails. Por favor intente nuevamente.');
+      } finally {
+          setLoading(false);
+      }
+    };
     
     return <div className="mt-6">
         <div className="flex justify-between items-center mb-4">

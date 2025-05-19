@@ -165,61 +165,6 @@ const ComercialPage = () => {
     }
   };
 
-  const handleEnviarEmails = async (selectedEmpresas, setSelectedEmpresas, setLoading, filtros) => {
-      if (selectedEmpresas.length === 0) {
-          alert('Debe seleccionar al menos una empresa');
-          return;
-      }
-
-      setLoading(true);
-      
-      try {
-          // Preparamos los datos para enviar a la API
-          const empresasIds = selectedEmpresas;
-          const payload = {
-              departamento: filtros.departamentos,
-              actividad_economica: filtros.actividades,
-              empresas_ids: empresasIds,
-              responsable: sessionStorage.getItem('username'),
-              campana_id: 123 // Aquí podrías tener un campo para seleccionar la campaña
-          };
-          console.log(payload)
-          
-          // Llamada a la API para enviar emails y crear en kanban
-          const response = await fetch(API_URL + '/kanban/enviar-emails', {
-              method: 'POST',
-              headers: {
-              'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(payload)
-          });
-          
-          if (response.ok) {
-              const result = await response.json();
-              
-              // Actualizamos el kanban con los nuevos datos
-              const resKanban = await fetch(API_URL + '/kanban/listar?username=' + selectedUser);
-              if (resKanban.ok) {
-              const updatedKanbanData = await resKanban.json();
-              setKanbanData(updatedKanbanData.tablero);
-              }
-              
-              setSelectedEmpresas([]);
-              setActiveTab('kanban');
-              
-              alert(result.mensaje || `Se enviaron ${selectedEmpresas.length} emails y se registraron en el kanban.`);
-          } else {
-              console.error('Error al enviar emails:', response.statusText);
-              alert('Ocurrió un error al enviar los emails. Por favor intente nuevamente.');
-          }
-      } catch (error) {
-          console.error('Error al enviar emails:', error);
-          alert('Ocurrió un error al enviar los emails. Por favor intente nuevamente.');
-      } finally {
-          setLoading(false);
-      }
-    };
-
   // Abrir modal con detalles de empresa
   const openEmpresaModal = (empresa) => {
     setSelectedEmpresa(empresa);
@@ -343,8 +288,10 @@ const ComercialPage = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
         {activeTab === 'filter' ? (
-          <FiltroTab
-          handleEnviarEmails={handleEnviarEmails}/>
+          <FiltroTab 
+            setKanbanData={setKanbanData}
+            setActiveTab={setActiveTab}
+          />
         ) : (
           <KanbanTab 
             kanbanData = {kanbanData} 

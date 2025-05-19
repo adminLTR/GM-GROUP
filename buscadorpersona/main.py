@@ -6,7 +6,7 @@ BACKEND_PATH = os.path.abspath("./backend")
 FRONTEND_PATH = os.path.abspath("./frontend")
 
 # Comandos
-backend_command = ["uvicorn", "api:app", "--reload", "--port", "8000"]
+backend_command = ["uvicorn", "api:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
 frontend_command = ["npm", "run", "dev"]
 
 # Iniciar backend

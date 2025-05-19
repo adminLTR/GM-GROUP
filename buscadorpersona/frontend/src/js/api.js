@@ -18,3 +18,11 @@ export async function agregarEmpresa(data) {
     const response = await axios.post(API_URL + "/empresas/agregar", data);
     return response.data;
 }
+export async function enviarEmailKanban(data) {
+    const response = await axios.post(API_URL + "/kanban/enviar-emails", data);
+    return response.data;
+}
+export async function listarKanban(username) {
+    const response = await axios.get(API_URL + `/kanban/listar?username=${username}`);
+    return response.data;
+}

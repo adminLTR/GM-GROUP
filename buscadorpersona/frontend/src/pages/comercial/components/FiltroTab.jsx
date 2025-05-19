@@ -8,9 +8,7 @@ import { getDepartamentos, getActividades, getEmpresasFiltro, agregarEmpresa } f
 import { Search } from 'lucide-react';
 import { useState, useEffect } from "react";
 
-export default function FiltroTab({
-    handleEnviarEmails,
-}) {
+export default function FiltroTab({setKanbanData, setActiveTab}) {
 
     const [filtros, setFiltros] = useState({
         departamentos: '',
@@ -87,17 +85,16 @@ export default function FiltroTab({
         </div>
         
         {/* Tabla de resultados o mensaje */}
-        {
-        empresas.length > 0 && (
+        {empresas.length > 0 && (
             <Resultados
                 empresas={empresas}
                 loading={loading}
                 setLoading={setLoading}
-                handleEnviarEmails={handleEnviarEmails}
                 filtros={filtros}
+                setActiveTab={setActiveTab}
+                setKanbanData={setKanbanData}
             />
-        )
-        }
+        )}
         <div className="my-4">
             <FormularioAgregarEmpresa
                 departamentos={departamentos}
