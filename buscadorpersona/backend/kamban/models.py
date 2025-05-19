@@ -11,3 +11,8 @@ class FiltroEnvio(BaseModel):
     fecha_desde: Optional[date] = None
     fecha_hasta: Optional[date] = None
     responsable: str
+
+class MovimientoKanban(BaseModel):
+    nuevo_estado: str
+    usuario: str = ""
+    comentario: str = ""

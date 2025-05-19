@@ -77,7 +77,7 @@ export default function FiltroTab({setKanbanData, setActiveTab}) {
         
         <div className="flex justify-center mb-6">
             <Button onClick={handleBuscarEmpresas}
-            disabled={(!filtros.departamentos && !filtros.actividades) || loading}
+            disabled={(!filtros.departamentos && !filtros.actividades && !filtros.nombre_empresa) || loading}
             >
                 <Search size={20} />
                 {loading ? 'Buscando...' : 'Buscar Empresas'}

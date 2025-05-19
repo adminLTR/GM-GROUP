@@ -68,7 +68,7 @@ const ComercialPage = () => {
   }, [selectedUser]);
 
   // Mover tarjeta entre columnas con actualización a la API
-  const moveCard = async (empresa, targetColumn) => {
+  const moveCard = async (empresa, targetColumn = null, newResponsable = null, comentarios = null) => {
     try {
       // Identificar columna actual
       let currentColumn = empresa.estado;
@@ -77,7 +77,7 @@ const ComercialPage = () => {
       
       // Actualizar localmente primero para una mejor experiencia de usuario
       const updatedKanban = {...kanbanData};
-      
+
       // Remove from current column
       Object.keys(updatedKanban).forEach(column => {
         updatedKanban[column] = updatedKanban[column].filter(e => e.kanban_id !== empresa.kanban_id);
@@ -91,8 +91,8 @@ const ComercialPage = () => {
       setKanbanData(updatedKanban);
       
       // Luego enviar la actualización a la API
-      const response = await fetch(API_URL + '/kanban/mover', {
-        method: 'POST',
+      const response = await fetch(API_URL + '/kanban/update/' + empresa.kanban_id, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },

@@ -6,21 +6,26 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [load, setLoad] = useState(false)
 
   const API_URL = import.meta.env.VITE_API_URL;
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
+
+    setLoad(true)
+    console.log(API_URL + '/users/login')
     const response = await fetch(API_URL + '/users/login', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-        username, password
-    })
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+          username, password
+      })
     });
+    console.log(response)
     if (response.ok) {
         const res = await response.json()
         sessionStorage.setItem('token', res.access_token);
@@ -28,6 +33,7 @@ export default function LoginPage() {
         sessionStorage.setItem("superuser", res.superuser);
         window.location.href = "/";
     } else {
+        setLoad(false);
         withReactContent(Swal).fire({
             title: "Error al logearse",
             text: "Credenciales incorrectas",
@@ -90,7 +96,8 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          className="w-full bg-indigo-700 text-white py-2 rounded-md hover:bg-indigo-600 transition-all duration-300 cursor-pointer"
+          disabled={load}
+          className="w-full bg-indigo-700 text-white py-2 rounded-md hover:bg-indigo-600 transition-all duration-300 cursor-pointer disabled:bg-indigo-400"
         >
           Ingresar
         </button>

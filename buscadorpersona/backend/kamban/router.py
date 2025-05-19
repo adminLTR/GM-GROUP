@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Path
 from .models import *
 import mysql.connector
 import requests
@@ -177,4 +177,54 @@ def listar_tablero_kanban(username: str = Query(..., description="Nombre de usua
         "status": "ok",
         "tablero": tablero,
         "es_superuser": user["es_superuser"]
+    }
+
+ESTADOS_VALIDOS = [
+    "email_enviado",
+    "primer_llamado",
+    "reunion",
+    "envio_propuesta",
+    "seguimiento",
+    "envio_contrato",
+    "contrato_los_servicios",
+    "finalizado"
+]
+
+@router.put("/update/{kanban_id}")
+async def actualizar_kanban(
+    mov: MovimientoKanban,
+    kanban_id: int = Path(..., gt=0),
+):
+    if mov.nuevo_estado not in ESTADOS_VALIDOS:
+        raise HTTPException(status_code=400, detail="Estado no válido.")
+
+    conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
+    cursor = conn.cursor()
+
+    # Verificamos que la empresa esté ya en el tablero
+    cursor.execute("SELECT * FROM kanban_estado_empresa WHERE id = %s", (kanban_id,))
+    existente = cursor.fetchone()
+
+    if existente:
+        # Actualizamos el estado, comentario y usuario
+        cursor.execute("""
+            UPDATE kanban_estado_empresa
+            SET estado = %s,
+                comentario = %s
+            WHERE id = %s
+        """, (mov.nuevo_estado, mov.comentario, kanban_id))
+    else:
+        # Insertamos una nueva entrada si no existe
+        cursor.execute("""
+            INSERT INTO kanban_estado_empresa (empresa_id, estado, usuario_responsable, comentario)
+            VALUES (%s, %s, %s, %s)
+        """, (mov.kanban_id, mov.nuevo_estado, mov.usuario, mov.comentario))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return {
+        "status": "ok",
+        "mensaje": f"La empresa fue movida a '{mov.nuevo_estado}'."
     }

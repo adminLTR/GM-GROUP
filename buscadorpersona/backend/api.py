@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 import os
 import mysql.connector
 from mysql.connector import Error
-from kamban.routes.mover import router as mover_router
+# from kamban.routes.mover import router as mover_router
 from empresas.router import router as empresas_router
 from kamban.router import router as kanban_router
 from users.router import router as users_router
@@ -120,4 +120,4 @@ async def buscar(request: Request):
 app.include_router(kanban_router, prefix="/kanban")
 app.include_router(users_router, prefix="/users")
 app.include_router(empresas_router, prefix="/empresas")
-app.include_router(mover_router)
+# app.include_router(mover_router)
