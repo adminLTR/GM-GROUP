@@ -67,68 +67,6 @@ const ComercialPage = () => {
     fetchInitialData()
   }, [selectedUser]);
 
-  // Mover tarjeta entre columnas con actualización a la API
-  const moveCard = async (empresa, targetColumn = null, newResponsable = null, comentarios = null) => {
-    try {
-      // Identificar columna actual
-      let currentColumn = empresa.estado;
-      
-      if (!currentColumn || currentColumn === targetColumn) return;
-      
-      // Actualizar localmente primero para una mejor experiencia de usuario
-      const updatedKanban = {...kanbanData};
-
-      // Remove from current column
-      Object.keys(updatedKanban).forEach(column => {
-        updatedKanban[column] = updatedKanban[column].filter(e => e.kanban_id !== empresa.kanban_id);
-      });
-      // Add to target column
-      if (updatedKanban[targetColumn]) {
-        updatedKanban[targetColumn] = [...updatedKanban[targetColumn], empresa];
-      } else {
-        updatedKanban[targetColumn] = [empresa];
-      }
-      setKanbanData(updatedKanban);
-      
-      // Luego enviar la actualización a la API
-      const response = await fetch(API_URL + '/kanban/update/' + empresa.kanban_id, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          kanban_id: empresa.kanban_id,
-          // estado_anterior: currentColumn,
-          usuario: selectedUser,
-          nuevo_estado: targetColumn
-        })
-      });
-      
-      if (!response.ok) {
-        console.error('Error al mover empresa en el kanban:', response.statusText);
-        // Si hay error, podríamos revertir el cambio local
-        // o recargar el kanban completo
-        const resKanban = await fetch(API_URL + '/kanban/listar?username=' + selectedUser);
-        if (resKanban.ok) {
-          const kanbanData = await resKanban.json();
-          setKanbanData(kanbanData);
-        }
-      }
-    } catch (error) {
-      console.error('Error al mover empresa en el kanban:', error);
-      // Recargar el kanban para restaurar el estado correcto
-      try {
-        const resKanban = await fetch(API_URL + '/kanban/listar?username=' + selectedUser);
-        if (resKanban.ok) {
-          const kanbanData = await resKanban.json();
-          setKanbanData(kanbanData);
-        }
-      } catch (e) {
-        console.error('Error al recargar kanban:', e);
-      }
-    }
-  };
-
   // Abrir modal con detalles de empresa
   const openEmpresaModal = (empresa) => {
     setSelectedEmpresa(empresa);
