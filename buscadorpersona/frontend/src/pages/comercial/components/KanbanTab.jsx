@@ -34,7 +34,7 @@ function KanbanItem({openEmpresaModal, empresa}) {
         <div className="mt-3 pt-3 border-t border-gray-100 text-sm">
             <div className="flex items-start gap-1">
             <MessageSquare size={14} className="mt-1 flex-shrink-0" />
-            <span>{empresa.comentarios[empresa.comentarios.length - 1].texto}</span>
+            <span>{empresa.comentario.split("|").pop()}</span>
             </div>
         </div>
         )}

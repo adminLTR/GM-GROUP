@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, Path
+from fastapi import APIRouter, HTTPException, Query, Path, Body
 from .models import *
 import mysql.connector
 import requests
@@ -192,39 +192,65 @@ ESTADOS_VALIDOS = [
 
 @router.put("/update/{kanban_id}")
 async def actualizar_kanban(
-    mov: MovimientoKanban,
+    mov: MovimientoKanban = Body(...),
     kanban_id: int = Path(..., gt=0),
 ):
-    if mov.nuevo_estado not in ESTADOS_VALIDOS:
+    if mov.estado and mov.estado not in ESTADOS_VALIDOS:
         raise HTTPException(status_code=400, detail="Estado no válido.")
 
     conn = obtener_conexion(os.getenv("DB_BUSQUEDA_NAME"))
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
-    # Verificamos que la empresa esté ya en el tablero
+    # Verificamos que el kanban exista
     cursor.execute("SELECT * FROM kanban_estado_empresa WHERE id = %s", (kanban_id,))
     existente = cursor.fetchone()
 
-    if existente:
-        # Actualizamos el estado, comentario y usuario
-        cursor.execute("""
-            UPDATE kanban_estado_empresa
-            SET estado = %s,
-                comentario = %s
-            WHERE id = %s
-        """, (mov.nuevo_estado, mov.comentario, kanban_id))
-    else:
-        # Insertamos una nueva entrada si no existe
-        cursor.execute("""
-            INSERT INTO kanban_estado_empresa (empresa_id, estado, usuario_responsable, comentario)
-            VALUES (%s, %s, %s, %s)
-        """, (mov.kanban_id, mov.nuevo_estado, mov.usuario, mov.comentario))
+    if not existente:
+        raise HTTPException(status_code=404, detail="Registro de kanban no encontrado.")
 
+    updates = []
+    valores = []
+
+    # Estado
+    if mov.estado:
+        updates.append("estado = %s")
+        valores.append(mov.estado)
+
+    # Comentario: concatenar con el anterior
+    if mov.comentario:
+        comentario_anterior = existente["comentario"] or ""
+        nuevo_comentario = (
+            f"{comentario_anterior}|{mov.comentario}" if comentario_anterior else mov.comentario
+        )
+        updates.append("comentario = %s")
+        valores.append(nuevo_comentario)
+
+    # Usuario responsable: verificar existencia
+    if mov.usuario_responsable:
+        cursor.execute("SELECT id_usuario FROM sistema_seguros.usuarios WHERE username = %s", (mov.usuario_responsable,))
+        usuario = cursor.fetchone()
+        if not usuario:
+            raise HTTPException(status_code=400, detail="El usuario responsable no existe.")
+        updates.append("usuario_responsable = %s")
+        valores.append(mov.usuario_responsable)
+
+    if not updates:
+        raise HTTPException(status_code=400, detail="No se proporcionó información para actualizar.")
+
+    query = f"""
+        UPDATE kanban_estado_empresa
+        SET {', '.join(updates)}
+        WHERE id = %s
+    """
+    valores.append(kanban_id)
+
+    cursor.execute(query, valores)
     conn.commit()
+
     cursor.close()
     conn.close()
 
     return {
         "status": "ok",
-        "mensaje": f"La empresa fue movida a '{mov.nuevo_estado}'."
+        "mensaje": "Kanban actualizado correctamente."
     }

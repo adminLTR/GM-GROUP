@@ -13,6 +13,6 @@ class FiltroEnvio(BaseModel):
     responsable: str
 
 class MovimientoKanban(BaseModel):
-    nuevo_estado: str
-    usuario: str = ""
-    comentario: str = ""
+    estado: Optional[str]
+    usuario_responsable: Optional[str]
+    comentario: Optional[str]

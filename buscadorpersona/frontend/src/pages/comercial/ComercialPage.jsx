@@ -135,115 +135,6 @@ const ComercialPage = () => {
     setModalVisible(true);
   };
 
-  // Añadir comentario a una empresa usando la API
-  const addComentario = async (text) => {
-    if (!selectedEmpresa || !text) return;
-    
-    try {
-      const usuario = 'Usuario Actual'; // Esto podría venir de un contexto de autenticación
-      
-      // Primero actualizamos la UI para mejor experiencia
-      const comentario = {
-        texto: text,
-        fecha: new Date().toLocaleDateString(),
-        usuario: usuario
-      };
-
-      // Find and update the empresa in the kanban
-      const updatedKanban = {...kanbanData};
-      
-      Object.keys(updatedKanban).forEach(column => {
-        updatedKanban[column] = updatedKanban[column].map(e => {
-          if (e.id === selectedEmpresa.id) {
-            return {
-              ...e,
-              comentarios: [...e.comentarios, comentario]
-            };
-          }
-          return e;
-        });
-      });
-      
-      setKanbanData(updatedKanban);
-      
-      // Update the selected empresa for the modal
-      setSelectedEmpresa({
-        ...selectedEmpresa,
-        comentarios: [...selectedEmpresa.comentarios, comentario]
-      });
-      
-      // Ahora enviamos a la API
-      const response = await fetch('/api/kanban/agregar-comentario', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          empresa_id: selectedEmpresa.id,
-          comentario: text,
-          usuario: usuario
-        })
-      });
-      
-      if (!response.ok) {
-        console.error('Error al agregar comentario:', response.statusText);
-        // Si hay error, podríamos revertir el cambio local o recargar
-      }
-    } catch (error) {
-      console.error('Error al agregar comentario:', error);
-    }
-  };
-
-  // Cambiar responsable de una empresa usando la API
-  const updateResponsable = async (responsable) => {
-    if (!selectedEmpresa) return;
-    
-    try {
-      // Actualizamos la UI primero para mejor experiencia
-      // Find and update the empresa in the kanban
-      const updatedKanban = {...kanbanData};
-      
-      Object.keys(updatedKanban).forEach(column => {
-        updatedKanban[column] = updatedKanban[column].map(e => {
-          if (e.id === selectedEmpresa.id) {
-            return {
-              ...e,
-              responsable
-            };
-          }
-          return e;
-        });
-      });
-      
-      setKanbanData(updatedKanban);
-      
-      // Update the selected empresa for the modal
-      setSelectedEmpresa({
-        ...selectedEmpresa,
-        responsable
-      });
-      
-      // Ahora enviamos a la API
-      const response = await fetch('/api/kanban/actualizar-responsable', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          empresa_id: selectedEmpresa.id,
-          responsable: responsable
-        })
-      });
-      
-      if (!response.ok) {
-        console.error('Error al actualizar responsable:', response.statusText);
-        // Si hay error, podríamos revertir el cambio local o recargar
-      }
-    } catch (error) {
-      console.error('Error al actualizar responsable:', error);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
@@ -274,10 +165,9 @@ const ComercialPage = () => {
         <ModalKanban
           setModalVisible = {setModalVisible}
           selectedEmpresa = {selectedEmpresa}
-          updateResponsable = {updateResponsable}
-          moveCard = {moveCard}
           columnTitles = {columnTitles}
-          addComentario = {addComentario}
+          setSelectedEmpresa={setSelectedEmpresa}
+          setKanbanData={setKanbanData}
         />
       )}
     </div>

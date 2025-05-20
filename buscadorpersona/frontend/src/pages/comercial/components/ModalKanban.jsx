@@ -1,21 +1,70 @@
 import { ChevronDown, Edit } from 'lucide-react';
+import { updateKanban } from '../../../js/api';
 
 
 export default function ModalKanban({
     setModalVisible,
     selectedEmpresa,
-    updateResponsable,
-    moveCard,
     columnTitles,
-    addComentario
+    setSelectedEmpresa,
+    setKanbanData
 }) {
+
+    async function handleUpdate(key, value) {
+        const data = {
+          'usuario_responsable' : null,
+          'estado' : null,
+          'comentario' : null
+        }
+        data[key] = value
+        const comment = selectedEmpresa.comentario
+        const response = await updateKanban(selectedEmpresa.kanban_id, data);
+        if (response.status === 'ok') {
+            setSelectedEmpresa({...selectedEmpresa, ...data, 'comentario' : comment + '|' + (data.comentario ? data.comentario : '')})
+
+        }
+    }
+
+    async function handleClose() {
+        setModalVisible(false);
+        try {
+          const resKanban = await fetch('http://localhost:8000/kanban/listar?username=' + sessionStorage.getItem('username'));
+          if (resKanban.ok) {
+            const kanbanData = await resKanban.json();
+            setKanbanData(kanbanData.tablero);
+          } else {
+            setKanbanData({
+              email_enviado: [],
+              primer_llamado: [],
+              reunion: [],
+              envio_propuesta: [],
+              seguimiento: [],
+              envio_contrato: [],
+              contrato_los_servicios: [],
+              finalizado: []
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching initial data:', error);
+          setKanbanData({
+            email_enviado: [],
+            primer_llamado: [],
+            reunion: [],
+            envio_propuesta: [],
+            seguimiento: [],
+            envio_contrato: [],
+            contrato_los_servicios: [],
+            finalizado: []
+          });
+        }
+    } 
     return <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-screen overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b">
               <h3 className="text-xl font-semibold">{selectedEmpresa.nombre_empresa}</h3>
               <button 
                 className="text-gray-400 hover:text-gray-600"
-                onClick={() => setModalVisible(false)}
+                onClick={() => handleClose()}
               >
                 ✕
               </button>
@@ -54,7 +103,9 @@ export default function ModalKanban({
                           className="text-indigo-600 hover:text-indigo-800"
                           onClick={() => {
                             const newResponsable = prompt('Ingrese el nombre del nuevo responsable:', selectedEmpresa.responsable);
-                            if (newResponsable) updateResponsable(newResponsable);
+                            if (newResponsable) handleUpdate('usuario_responsable', newResponsable);
+                            // if (newResponsable) updateResponsable(newResponsable);
+                            
                           }}
                         >
                           <Edit size={16} />
@@ -84,10 +135,11 @@ export default function ModalKanban({
                         // const empresaToMove = kanbanData[currentColumn].find(e => e.id === selectedEmpresa.id);
                         // console.log(empresaToMove)
                         // console.log(selectedEmpresa)
-                        moveCard(selectedEmpresa, targetColumn);
+                        // moveCard(selectedEmpresa, targetColumn);
+                        handleUpdate('estado', targetColumn);
                       }
                       
-                      setModalVisible(false);
+                      handleClose()
                     }}
                   >
                     {Object.keys(columnTitles).map((column) => {
@@ -107,13 +159,13 @@ export default function ModalKanban({
                 <h4 className="font-medium mb-3">Historial de comentarios</h4>
                 
                 <div className="space-y-4 mb-4 max-h-60 overflow-y-auto bg-gray-50 p-4 rounded-md">
-                  {selectedEmpresa.comentarios && selectedEmpresa.comentarios.length > 0 ? (
-                    selectedEmpresa.comentarios.map((comentario, index) => (
+                  {selectedEmpresa.comentario && selectedEmpresa.comentario.length > 0 ? (
+                    selectedEmpresa.comentario.split('|').map((comentario, index) => (
                       <div key={index} className="pb-3 border-b border-gray-200 last:border-0">
-                        <div className="text-sm">{comentario.texto}</div>
+                        {/* <div className="text-sm">{comentario.texto}</div> */}
                         <div className="text-xs text-gray-500 mt-1 flex items-center justify-between">
-                          <span>{comentario.usuario}</span>
-                          <span>{comentario.fecha}</span>
+                          <span>{comentario}</span>
+                          {/* <span>{comentario.fecha}</span> */}
                         </div>
                       </div>
                     ))
@@ -137,7 +189,8 @@ export default function ModalKanban({
                       onClick={() => {
                         const commentInput = document.getElementById('new-comment');
                         if (commentInput && commentInput.value) {
-                          addComentario(commentInput.value);
+                          // addComentario(commentInput.value);
+                          handleUpdate('comentario', commentInput.value)
                           commentInput.value = '';
                         }
                       }}
